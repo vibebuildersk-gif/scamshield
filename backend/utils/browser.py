@@ -1,8 +1,18 @@
 import os
 import re
 import traceback
+import cloudinary
+import cloudinary.uploader
 
 from playwright.sync_api import sync_playwright
+
+# Configure Cloudinary
+cloudinary.config(
+    cloud_name="dafsamoco",
+    api_key="641631957764477",
+    api_secret="9OllXoVtR0Iv1wmeDWp1GmLQngk",
+    secure=True
+)
 
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -69,6 +79,14 @@ def visit_website(url):
             page.screenshot(
                 path=screenshot_path
             )
+            
+            # Upload screenshot to Cloudinary
+            cloudinary_url = ""
+            try:
+                upload_result = cloudinary.uploader.upload(screenshot_path, folder="phishguard_scans")
+                cloudinary_url = upload_result.get("secure_url", "")
+            except Exception as e:
+                print(f"Cloudinary upload failed: {e}")
 
             # Check for Clickjacking / Transparent Overlays
             has_clickjacking = page.evaluate('''
@@ -108,6 +126,7 @@ def visit_website(url):
                 "html": html,
                 "html_file": html_path,
                 "screenshot": screenshot_path,
+                "cloudinary_url": cloudinary_url,
                 "has_clickjacking": has_clickjacking
             }
 

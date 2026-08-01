@@ -217,7 +217,8 @@ def scan_url(req: ScanRequest):
         "raw_features": features,
         "urlscan": urlscan_data,
         "virustotal": vt_data,
-        "ocr_summary": ocr_summary
+        "ocr_summary": ocr_summary,
+        "screenshot_url": features.get("cloudinary_url", "")
     }
 
 if __name__ == "__main__":

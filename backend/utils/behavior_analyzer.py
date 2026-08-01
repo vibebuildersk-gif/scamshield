@@ -6,6 +6,15 @@ def analyze_behavior(url):
     that rely on dynamic redirects, popups, and hidden DOM elements.
     """
     import os
+    import cloudinary
+    import cloudinary.uploader
+    
+    cloudinary.config(
+        cloud_name="dafsamoco",
+        api_key="641631957764477",
+        api_secret="9OllXoVtR0Iv1wmeDWp1GmLQngk",
+        secure=True
+    )
     
     # Delete stale screenshot from previous runs
     stale_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "static", "scrapes", "current_target.png")
@@ -77,6 +86,16 @@ def analyze_behavior(url):
             os.makedirs(os.path.dirname(screenshot_path), exist_ok=True)
             page.screenshot(path=screenshot_path)
             results["_screenshot_path"] = screenshot_path
+            
+            # Upload screenshot to Cloudinary
+            cloudinary_url = ""
+            try:
+                upload_result = cloudinary.uploader.upload(screenshot_path, folder="phishguard_scans")
+                cloudinary_url = upload_result.get("secure_url", "")
+            except Exception as e:
+                print(f"[Behavior Analyzer] Cloudinary upload failed: {e}")
+                
+            results["cloudinary_url"] = cloudinary_url
             
             # Evaluate Navigation
             results["redirect_chain_length"] = len(redirect_urls)
