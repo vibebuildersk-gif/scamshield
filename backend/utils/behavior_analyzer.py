@@ -58,8 +58,8 @@ def analyze_behavior(url):
 
     try:
         with sync_playwright() as p:
-            # Run visible browser to bypass bot-checks and let user see the scan
-            browser = p.chromium.launch(headless=False)
+            # Run invisible browser for cloud compatibility
+            browser = p.chromium.launch(headless=True)
             context = browser.new_context(
                 ignore_https_errors=True
             )

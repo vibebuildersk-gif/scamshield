@@ -52,7 +52,7 @@ def visit_website(url):
 
             browser = p.chromium.launch(
                 channel="chrome",
-                headless=False,
+                headless=True,
                 args=[
                     "--disable-blink-features=AutomationControlled",
                     "--disable-web-security",
