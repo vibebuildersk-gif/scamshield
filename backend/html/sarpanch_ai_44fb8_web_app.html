@@ -1,0 +1,1602 @@
+<!DOCTYPE html><html lang="en" class="lenis lenis-smooth"><head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sarpanch AI — AI-Powered Smart Farming Assistant</title>
+  <meta name="description" content="Sarpanch AI is your AI farming companion that analyzes weather, market prices, and crop conditions to give farmers clear daily actions that increase profit and reduce risk.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&amp;family=Instrument+Serif:ital@0;1&amp;family=Noto+Sans+Devanagari:wght@400;600;700&amp;display=swap" rel="stylesheet">
+  <!-- PWA Manifest -->
+  <link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#FF6B00">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="Sarpanch AI">
+  <link rel="apple-touch-icon" href="/icons/icon-192.png">
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box }
+
+    :root {
+      --saffron: #FF6B00;
+      --saffron-glow: #FF8C38;
+      --green: #138808;
+      --green-light: #1CAD0A;
+      --white: #FFFFFF;
+      --off-white: #FAFBFC;
+      --surface: #F4F6F8;
+      --card: #FFFFFF;
+      --text: #1A1A2E;
+      --text-secondary: #4A5568;
+      --muted: #6B7280;
+      --border: #E5E7EB;
+      --border-light: #F0F1F3;
+      --gold: #F59E0B;
+      --sky: #1A73E8;
+      --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.06);
+      --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.08);
+      --shadow-lg: 0 12px 40px rgba(0, 0, 0, 0.1);
+    }
+
+    html { scroll-behavior: auto }
+    body { font-family: 'Inter', sans-serif; background: var(--white); color: var(--text); overflow-x: hidden }
+
+    /* NAVBAR */
+    nav {
+      position: fixed; top: 0; width: 100%; z-index: 1000; padding: 16px 40px;
+      display: flex; align-items: center; justify-content: space-between;
+      background: transparent; transition: all .3s
+    }
+    nav.scrolled {
+      background: rgba(255, 255, 255, .92); backdrop-filter: blur(16px);
+      box-shadow: 0 2px 20px rgba(0, 0, 0, .06); border-bottom: 1px solid var(--border-light)
+    }
+    .nav-brand { display: flex; align-items: center; gap: 10px; font-size: 22px; font-weight: 800; letter-spacing: -.5px; color: var(--text); text-decoration: none; }
+    .nav-brand span { font-size: 28px }
+
+    /* DROPDOWN */
+    .dropdown { position: relative; display: inline-block; }
+    .dropdown-content { display: none; position: absolute; background-color: var(--white); min-width: 220px; box-shadow: var(--shadow-md); border-radius: 12px; z-index: 1001; top: 100%; left: 0; border: 1px solid var(--border); padding: 8px 0; }
+    .dropdown-content a { color: var(--text); padding: 12px 16px; text-decoration: none; display: block; font-size: 14px; transition: all 0.3s ease; }
+    .dropdown-content a:hover { background-color: rgba(255, 107, 0, 0.08); color: var(--saffron); padding-left: 20px; }
+    .dropdown:hover .dropdown-content { display: block; animation: fadeInDown 0.3s ease forwards; }
+    @keyframes fadeInDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+    .agrocare-dropdown { min-width: 260px !important; }
+    .dropdown-item { white-space: normal !important; }
+
+    /* Nested Dropdown */
+    .nested-dropdown { position: relative; }
+    .nested-dropdown > a { display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
+    .nested-dropdown > .nested-link::after { content: "›"; font-size: 20px; font-weight: 400; color: var(--muted); transition: all 0.2s; }
+    .nested-dropdown:hover > .nested-link::after { transform: translateX(3px); color: var(--saffron); }
+    .nested-dropdown-content { display: none; position: absolute; left: 100%; top: 0; background-color: var(--white); min-width: 200px; box-shadow: var(--shadow-md); border-radius: 12px; z-index: 1002; border: 1px solid var(--border); overflow: hidden; }
+    .nested-dropdown:hover .nested-dropdown-content { display: block; animation: fadeInRight 0.3s ease forwards; }
+    @keyframes fadeInRight { from { opacity: 0; transform: translateX(-10px); } to { opacity: 1; transform: translateX(0); } }
+    .nested-dropdown.active .nested-dropdown-content { display: block; }
+    .nested-dropdown-content a { padding: 12px 16px; white-space: nowrap; }
+
+    .nav-links { display: flex; gap: 32px; list-style: none; align-items: center; }
+    .nav-links > li > a { color: var(--muted); text-decoration: none; font-size: 14px; font-weight: 500; transition: color .2s; cursor: pointer; position: relative; padding-bottom: 4px; }
+    .nav-links > li > a::after { content: ''; position: absolute; width: 0; height: 2px; bottom: 0; left: 0; background-color: var(--saffron); transition: width 0.3s ease; }
+    .nav-links > li > a.no-underline::after { display: none !important; }
+    .nav-links > li > a:hover::after, .nav-links > li > a.active::after { width: 100%; }
+    .nav-links > li > a.no-underline:hover::after { width: 0; }
+    .nav-links > li > a:hover { color: var(--text); }
+    .nav-buttons { display: flex; gap: 16px; align-items: center; }
+    .nav-cta { background: linear-gradient(135deg, var(--saffron), var(--saffron-glow)); color: #fff; border: none; padding: 10px 24px; border-radius: 10px; font-weight: 700; font-size: 14px; cursor: pointer; font-family: inherit; transition: transform .2s, box-shadow .2s; text-decoration: none; display: inline-block; }
+    .nav-cta:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(255, 107, 0, .3) }
+    .lang-selector { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 6px 12px; font-weight: 600; font-size: 13px; cursor: pointer; outline: none; font-family: inherit; color: var(--text); }
+    
+    /* Hamburger Menu Icon (Hidden on Desktop) */
+    .hamburger { display: none; cursor: pointer; color: var(--text); padding: 4px; }
+
+    /* CHATBOT CSS */
+    #chat-icon { position: fixed; bottom: 30px; right: 30px; width: 64px; height: 64px; background: linear-gradient(135deg, var(--saffron), var(--saffron-glow)); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 32px; cursor: pointer; box-shadow: 0 8px 24px rgba(255, 107, 0, 0.4); z-index: 9999; transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+    #chat-icon:hover { transform: scale(1.1); }
+    #chat-window { position: fixed; bottom: 110px; right: 30px; width: 350px; height: 500px; background: white; border-radius: 16px; box-shadow: 0 12px 40px rgba(0,0,0,0.15); display: none; flex-direction: column; z-index: 9999; border: 1px solid var(--border); overflow: hidden; opacity: 0; transform: translateY(20px); transition: all 0.3s ease; }
+    #chat-window.show { display: flex; opacity: 1; transform: translateY(0); }
+    #chat-header { background: var(--saffron); color: white; padding: 16px; font-weight: 800; display: flex; justify-content: space-between; align-items: center; }
+    #chat-messages { flex: 1; padding: 16px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; background: var(--off-white); }
+    .chat-msg { max-width: 85%; padding: 10px 14px; border-radius: 12px; font-size: 14px; line-height: 1.4; word-wrap: break-word;}
+    .bot-msg { background: white; color: var(--text); border: 1px solid var(--border); align-self: flex-start; border-bottom-left-radius: 2px;}
+    .user-msg { background: var(--green); color: white; align-self: flex-end; border-bottom-right-radius: 2px;}
+    .quick-replies { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 5px; }
+    .quick-replies span { background: white; color: var(--saffron); padding: 8px 12px; border-radius: 16px; font-size: 12px; font-weight: 700; cursor: pointer; border: 1px solid var(--saffron); transition: all 0.2s; }
+    .quick-replies span:hover { background: var(--saffron); color: white; }
+    #chat-input-area { padding: 12px; border-top: 1px solid var(--border); display: flex; align-items: center; gap: 6px; background: white; }
+    #chat-input { flex: 1; padding: 10px 10px; border: 1px solid var(--border); border-radius: 8px; outline: none; font-family: inherit; }
+    #chat-input:focus { border-color: var(--saffron); }
+    #chat-input-area button.send-btn { background: var(--saffron); color: white; border: none; padding: 10px 16px; border-radius: 8px; font-weight: bold; cursor: pointer; }
+    
+    /* MIC BUTTON CSS */
+    .mic-btn { background: none; border: none; font-size: 22px; cursor: pointer; padding: 0 4px; color: var(--muted); transition: color 0.2s; }
+    .mic-btn:hover { color: var(--saffron); }
+
+    /* ── CINEMATIC AETHERA HERO ── */
+    @keyframes aetherFadeRise {
+      0%   { opacity: 0; transform: translateY(22px); }
+      100% { opacity: 1; transform: translateY(0); }
+    }
+    .aeth-hero {
+      position: relative;
+      min-height: 100vh;
+      width: 100%;
+      overflow: hidden;
+      background: #ffffff;
+      display: flex;
+      flex-direction: column;
+    }
+    /* video layer */
+    .aeth-video-wrap {
+      position: absolute;
+      inset: auto 0 0 0;
+      top: 300px;
+      z-index: 0;
+      overflow: hidden;
+      pointer-events: none;
+    }
+    .aeth-video-wrap video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      opacity: 0;
+    }
+    .aeth-grad {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(to bottom, #ffffff 0%, transparent 40%, transparent 60%, #ffffff 100%);
+      pointer-events: none;
+    }
+    /* nav override for aethera section */
+    .aeth-nav {
+      position: relative;
+      z-index: 10;
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 24px 40px;
+      max-width: 1280px;
+      margin: 0 auto;
+      box-sizing: border-box;
+    }
+    .aeth-logo {
+      font-family: 'Instrument Serif', serif;
+      font-size: 28px;
+      letter-spacing: -0.5px;
+      color: #000000;
+      text-decoration: none;
+    }
+    .aeth-nav-links { display: flex; gap: 32px; list-style: none; align-items: center; }
+    .aeth-nav-links a {
+      font-family: 'Inter', sans-serif;
+      font-size: 14px;
+      font-weight: 500;
+      text-decoration: none;
+      transition: opacity 0.2s;
+    }
+    .aeth-nav-links a:hover { opacity: 0.6; }
+    .aeth-cta-btn {
+      background: #000000;
+      color: #ffffff;
+      border: none;
+      border-radius: 999px;
+      padding: 10px 24px;
+      font-family: 'Inter', sans-serif;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: transform 0.2s;
+    }
+    .aeth-cta-btn:hover { transform: scale(1.03); }
+    /* hero content */
+    .aeth-content {
+      position: relative;
+      z-index: 10;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 80px 24px 160px;
+    }
+    .aeth-h1 {
+      font-family: 'Instrument Serif', serif;
+      font-size: clamp(3rem, 9vw, 6rem);
+      font-weight: 400;
+      line-height: 0.95;
+      letter-spacing: -2.46px;
+      color: #000000;
+      max-width: 1100px;
+      margin-bottom: 0;
+      opacity: 0;
+      animation: aetherFadeRise 0.8s ease-out 0.2s forwards;
+    }
+    .aeth-h1 em { color: #6F6F6F; font-style: italic; }
+    .aeth-desc {
+      font-family: 'Inter', sans-serif;
+      font-size: 1.05rem;
+      color: #6F6F6F;
+      max-width: 580px;
+      margin-top: 32px;
+      line-height: 1.7;
+      opacity: 0;
+      animation: aetherFadeRise 0.8s ease-out 0.4s forwards;
+    }
+    .aeth-hero-btn {
+      background: #000000;
+      color: #ffffff;
+      border: none;
+      border-radius: 999px;
+      padding: 18px 52px;
+      font-family: 'Inter', sans-serif;
+      font-size: 1rem;
+      font-weight: 500;
+      cursor: pointer;
+      margin-top: 40px;
+      transition: transform 0.2s;
+      opacity: 0;
+      animation: aetherFadeRise 0.8s ease-out 0.6s forwards;
+    }
+    .aeth-hero-btn:hover { transform: scale(1.03); }
+    @media(max-width: 768px) {
+      .aeth-nav { padding: 16px 16px; }
+      .aeth-nav-links { display: none; }
+      .aeth-h1 { font-size: clamp(2.2rem, 10vw, 3.5rem); letter-spacing: -1px; }
+      .aeth-content { padding: 80px 16px 100px; }
+    }
+
+    /* HERO */
+    .hero { position: relative; min-height: 100vh; display: flex; align-items: center; justify-content: center; overflow: hidden; background: var(--white); }
+    .hero-bg { position: absolute; inset: 0; background: radial-gradient(ellipse 70% 60% at 20% 30%, rgba(0,200,160,0.05) 0%, transparent 65%), radial-gradient(ellipse 50% 50% at 80% 70%, rgba(255,107,0,0.04) 0%, transparent 60%), radial-gradient(ellipse 40% 40% at 60% 20%, rgba(0,160,220,0.03) 0%, transparent 55%), linear-gradient(160deg, #ffffff 0%, #f4f6f8 40%, #fafbfc 70%, #ffffff 100%); }
+    .hero-bg::before { content: ''; position: absolute; inset: 0; background: radial-gradient(circle 120px at 15% 80%, rgba(0,200,160,0.06) 0%, transparent 70%), radial-gradient(circle 80px at 85% 15%, rgba(255,107,0,0.05) 0%, transparent 70%), radial-gradient(circle 60px at 50% 50%, rgba(0,160,220,0.03) 0%, transparent 70%); animation: orb-pulse 6s ease-in-out infinite alternate; pointer-events: none; }
+    @keyframes orb-pulse { 0% { opacity: 0.6; } 100% { opacity: 1; } }
+    .hero-overlay { position: absolute; inset: 0; background: linear-gradient(180deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.0) 40%, rgba(255,255,255,0.0) 65%, rgba(255,255,255,0.92) 100%); z-index: 1 }
+
+    /* 3D PHONE STYLES */
+    @import url('https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,600;9..40,700&display=swap');
+    .phone-scene { perspective: 800px; position: absolute; right: 6%; top: 50%; transform: translateY(-50%); z-index: 8; pointer-events: auto; }
+    .phone-3d { width: 200px; height: 420px; position: relative; transform-style: preserve-3d; border-radius: 28px; box-shadow: 0 40px 100px rgba(0,0,0,0.25); animation: phone-idle 6s ease-in-out infinite; }
+    @keyframes phone-idle { 0%,100% { transform: rotateY(-12deg) rotateX(4deg); } 50% { transform: rotateY(8deg) rotateX(-4deg); } }
+    .phone-3d:hover { animation: none; }
+    .phone-back { position: absolute; inset: 0; background: linear-gradient(160deg, #1a2a3a, #0d1820, #1a2a3a); border-radius: 28px; transform: translateZ(-14px); }
+    .phone-edge-r { position: absolute; top: 28px; bottom: 28px; right: 0; width: 14px; background: linear-gradient(180deg, #1e2e3e, #0d1820); transform-origin: right center; transform: rotateY(-90deg); }
+    .phone-edge-l { position: absolute; top: 28px; bottom: 28px; left: 0; width: 14px; background: linear-gradient(180deg, #1e2e3e, #0d1820); transform-origin: left center; transform: rotateY(90deg); }
+    .phone-edge-t { position: absolute; left: 28px; right: 28px; top: 0; height: 14px; background: linear-gradient(90deg, #1e2e3e, #0d1820); transform-origin: center top; transform: rotateX(-90deg); }
+    .phone-edge-b { position: absolute; left: 28px; right: 28px; bottom: 0; height: 14px; background: linear-gradient(90deg, #1e2e3e, #0d1820); transform-origin: center bottom; transform: rotateX(90deg); }
+    .phone-bezel { width: 100%; height: 100%; background: linear-gradient(160deg, #1e2e3e, #0d1820); border-radius: 28px; padding: 3px; position: relative; transform: translateZ(1px); }
+    .phone-inner { width: 100%; height: 100%; background: #060810; border-radius: 25px; padding: 3px; }
+    .phone-screen { width: 100%; height: 100%; border-radius: 22px; overflow: hidden; position: relative; background: linear-gradient(145deg, #060d1f, #0a1628); -webkit-mask-image: -webkit-radial-gradient(white, black); }
+    .phone-screen::after { content: ''; position: absolute; top: 8px; left: 50%; transform: translateX(-50%); width: 9px; height: 9px; border-radius: 50%; background: #050810; z-index: 30; }
+    @media(max-width: 900px) { .phone-scene { display: none; } .hero-content { max-width: 100% !important; } }
+    .hero-glow { position: absolute; width: 600px; height: 600px; border-radius: 50%; filter: blur(140px); opacity: .1; pointer-events: none; z-index: 2 }
+    .glow-saffron { background: var(--saffron); top: -100px; right: -100px }
+    .glow-green { background: var(--green); bottom: -100px; left: -100px }
+    .hero-particles { position: absolute; inset: 0; overflow: hidden; z-index: 2 }
+    .particle { position: absolute; width: 3px; height: 3px; background: rgba(255, 107, 0, .35); border-radius: 50%; animation: float-up linear infinite }
+    @keyframes float-up { 0% { transform: translateY(100vh) scale(0); opacity: 0 } 10% { opacity: .6 } 90% { opacity: .6 } 100% { transform: translateY(-10vh) scale(1); opacity: 0 } }
+    .hero-badge .dot { width: 6px; height: 6px; background: #00e8c0; border-radius: 50%; animation: blink 1.5s infinite }
+    @keyframes blink { 0%, 100% { opacity: 1 } 50% { opacity: .3 } }
+    .hero-content { position: relative; z-index: 10; text-align: center; max-width: 900px; padding: 120px 24px 80px; }
+    .hero-badge { display: inline-flex; align-items: center; gap: 8px; background: rgba(255, 107, 0, .08); border: 1px solid rgba(255, 107, 0, .2); border-radius: 24px; padding: 8px 18px; font-size: 13px; font-weight: 600; color: var(--saffron); margin-bottom: 24px; animation: fade-in-up .8s ease .3s both }
+    .hero-h1 { font-size: clamp(36px, 6vw, 72px); font-weight: 900; line-height: 1.3; letter-spacing: -2px; margin-bottom: 24px; color: var(--text); animation: fade-in-up .8s ease .5s both }
+    .hero-h1 .gradient-text { background: linear-gradient(135deg, var(--saffron), var(--saffron-glow)); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent }
+    .hero-h1 .green-text { background: linear-gradient(135deg, var(--text), var(--text-secondary)); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent }
+    .hero-sub { font-size: clamp(16px, 2vw, 18px); color: var(--text-secondary); max-width: 520px; margin: 0 auto 40px; line-height: 1.7; font-weight: 400; animation: fade-in-up .8s ease .7s both }
+    .text-rotate { display: inline-block; transition: opacity 0.4s ease, transform 0.4s ease; will-change: opacity, transform; }
+    .hero-btns { display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; animation: fade-in-up .8s ease .9s both }
+    .btn-primary { background: linear-gradient(135deg, var(--saffron), #FF8C38); color: #fff; border: none; padding: 16px 36px; border-radius: 14px; font-size: 17px; font-weight: 800; cursor: pointer; font-family: inherit; transition: all .25s; box-shadow: 0 8px 32px rgba(255, 107, 0, .25); text-decoration: none; display: inline-block; }
+    .btn-primary:hover { transform: translateY(-3px) scale(1.02); box-shadow: 0 12px 40px rgba(255, 107, 0, .35) }
+    .btn-secondary { background: rgba(255, 255, 255, .8); color: var(--text); border: 1.5px solid var(--border); padding: 16px 36px; border-radius: 14px; font-size: 17px; font-weight: 700; cursor: pointer; font-family: inherit; transition: all .25s; backdrop-filter: blur(8px) }
+    .btn-secondary:hover { background: var(--white); border-color: #ccc; transform: translateY(-3px); box-shadow: var(--shadow-md) }
+    @keyframes fade-in-up { from { opacity: 0; transform: translateY(30px) } to { opacity: 1; transform: translateY(0) } }
+
+    /* FEATURES & PROBLEM & HOW-TO */
+    .section { padding: 100px 40px; max-width: 1200px; margin: 0 auto; }
+    .section-tag { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 2px; color: var(--saffron); margin-bottom: 12px }
+    .section-heading { font-size: clamp(28px, 4vw, 44px); font-weight: 900; line-height: 1.1; letter-spacing: -1px; margin-bottom: 16px; color: var(--text) }
+    .section-desc { font-size: 17px; color: var(--muted); max-width: 520px; line-height: 1.6 }
+
+    .scroll-container { height: 60vh; display: flex; align-items: center; justify-content: center; position: relative; padding: 0; margin-top: 2rem; }
+    .perspective-container { padding-top: 0; padding-bottom: 0; width: 100%; position: relative; perspective: 1000px; }
+    .canvas-container { max-width: 100%; margin-left: auto; margin-right: auto; height: 45rem; width: 100%; position: relative; z-index: 0; cursor: move; }
+    @media (min-width: 768px) { .scroll-container { height: 90vh; padding: 0; margin-top: 0; } .canvas-container { height: 65rem; } }
+    #canvas-container canvas { filter: drop-shadow(0 30px 40px rgba(0,0,0,0.15)); }
+    
+    .problem-section { background: var(--white); padding: 100px 40px; }
+    .problem-stats-row { display: flex; gap: 20px; justify-content: center; flex-wrap: wrap; margin: 48px 0 60px; }
+    .problem-stat-card { flex: 1; min-width: 180px; max-width: 240px; background: var(--white); border: 1px solid var(--border); border-radius: 20px; padding: 28px 20px; text-align: center; box-shadow: var(--shadow-sm); position: relative; overflow: hidden; transition: transform .3s, box-shadow .3s; }
+    .problem-stat-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: linear-gradient(90deg, var(--saffron), var(--saffron-glow)); }
+    .problem-stat-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-lg); }
+    
+    .problem-stat-num { font-size: clamp(28px, 4vw, 40px); font-weight: 900; color: #000000; letter-spacing: -1px; line-height: 1; margin-bottom: 8px; }
+    .problem-stat-label { font-size: 13px; color: var(--muted); font-weight: 500; line-height: 1.4; }
+    
+    /* FIX: BANNER SLIDER CSS - X-AXIS (HORIZONTAL) SCROLL & PERFECT MOBILE SCALING */
+    .banner-slider-container {
+      max-width: 1100px;
+      margin: 0 auto;
+      overflow: hidden;
+      border-radius: 20px;
+      box-shadow: var(--shadow-lg);
+      position: relative;
+      background: transparent;
+      line-height: 0;
+      aspect-ratio: 21 / 9;
+    }
+    .banner-slider-track {
+      display: flex;
+      flex-direction: row; /* CHANGED TO X-AXIS / LEFT-TO-RIGHT */
+      width: 100%;
+      height: 100%;
+      transition: transform 0.6s cubic-bezier(0.25, 1, 0.5, 1);
+    }
+    .slider-img {
+      width: 100%;
+      height: 100%;
+      flex: 0 0 100%;
+      object-fit: cover; /* Removes white borders in laptop view by filling edge-to-edge */
+      border-radius: 20px;
+      display: block;
+      border: none;
+      margin: 0;
+      padding: 0;
+      background: transparent;
+    }
+    
+    @media(max-width: 768px) {
+      .banner-slider-container { aspect-ratio: 16 / 9; }
+      .slider-img { 
+        aspect-ratio: 16 / 9; 
+        object-fit: contain; /* Keeps mobile view completely untouched as requested */
+      }
+    }
+
+    .how-section { background: var(--surface); padding: 100px 40px }
+    .steps { display: flex; gap: 0; margin-top: 56px; max-width: 1100px; margin-left: auto; margin-right: auto; flex-wrap: wrap; justify-content: center }
+    .step { flex: 1; min-width: 200px; text-align: center; padding: 24px 20px; position: relative }
+    .step-num { width: 48px; height: 48px; border-radius: 50%; background: linear-gradient(135deg, var(--saffron), var(--saffron-glow)); color: #fff; font-size: 20px; font-weight: 900; display: flex; align-items: center; justify-content: center; margin: 0 auto 16px; box-shadow: 0 8px 24px rgba(255, 107, 0, .2) }
+    .step-icon { font-size: 36px; margin-bottom: 12px }
+    .step h4 { font-size: 16px; font-weight: 800; margin-bottom: 6px; color: var(--text) }
+    .step p { font-size: 13px; color: var(--muted); line-height: 1.5 }
+    .step-line { position: absolute; top: 44px; right: -32px; width: 64px; height: 2px; background: linear-gradient(90deg, var(--saffron), transparent) }
+    .step:last-child .step-line { display: none }
+
+    .trust-bar { display: flex; justify-content: center; gap: 48px; flex-wrap: wrap; padding: 60px 40px; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); margin: 0 40px; background: var(--white) }
+    .trust-item { text-align: center }
+    .trust-item .t-icon { font-size: 28px; margin-bottom: 8px }
+    .trust-item .t-text { font-size: 13px; font-weight: 600; color: var(--muted) }
+
+    .cta-section { padding: 100px 40px; text-align: center; background: var(--white) }
+    .cta-box { max-width: 700px; margin: 0 auto; background: linear-gradient(145deg, rgba(255, 107, 0, .06), rgba(19, 136, 8, .04)); border: 1px solid rgba(255, 107, 0, .12); border-radius: 28px; padding: 56px 40px }
+    .cta-box h2 { font-size: clamp(28px, 4vw, 40px); font-weight: 900; letter-spacing: -1px; margin-bottom: 14px; color: var(--text) }
+    .cta-box p { font-size: 16px; color: var(--muted); margin-bottom: 32px; line-height: 1.6 }
+
+    footer { border-top: 1px solid var(--border); padding: 48px 40px 32px; max-width: 1200px; margin: 0 auto; background: var(--white) }
+    .footer-top { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 32px; margin-bottom: 32px }
+    .footer-brand { max-width: 280px }
+    .footer-brand h3 { font-size: 20px; font-weight: 800; margin-bottom: 8px; display: flex; align-items: center; gap: 8px; color: var(--text) }
+    .footer-brand p { font-size: 13px; color: var(--muted); line-height: 1.6 }
+    .footer-col h4 { font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 12px; color: var(--saffron) }
+    .footer-col a { display: block; font-size: 14px; color: var(--muted); text-decoration: none; margin-bottom: 8px; transition: color .2s }
+    .footer-col a:hover { color: var(--text) }
+    .footer-bottom { display: flex; justify-content: space-between; align-items: center; font-size: 12px; color: var(--muted); padding-top: 24px; border-top: 1px solid var(--border); flex-wrap: wrap; gap: 12px }
+    .lang-tags { display: flex; gap: 12px; flex-wrap: wrap }
+    .lang-tag { background: var(--surface); border-radius: 6px; padding: 4px 10px; font-size: 11px; color: var(--muted); border: 1px solid var(--border-light) }
+
+    .reveal { opacity: 0; transform: translateY(40px); transition: all .7s cubic-bezier(.25, .46, .45, .94) }
+    .reveal.visible { opacity: 1; transform: translateY(0) }
+
+    /* MOBILE VIEW FIXES (INCLUDING HAMBURGER MENU) */
+    @media(max-width:768px) {
+      nav { padding: 12px 16px }
+      
+      .hamburger { display: flex; align-items: center; justify-content: center; margin-left: 8px; }
+      
+      .nav-links { display: none; position: absolute; top: 100%; left: 0; width: 100%; background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); flex-direction: column; padding: 20px; box-shadow: 0 10px 20px rgba(0,0,0,0.1); border-top: 1px solid var(--border-light); align-items: flex-start; gap: 16px; }
+      .nav-links.active { display: flex !important; }
+      .nav-links > li { width: 100%; }
+      .dropdown-content, .nested-dropdown-content { position: static; box-shadow: none; border: none; padding-left: 16px; background: transparent; min-width: 100%; display: none; margin-top: 8px; }
+      .dropdown:hover .dropdown-content { display: block; }
+      .nested-dropdown:hover .nested-dropdown-content { display: block; }
+      
+      .nav-buttons { gap: 8px; }
+      .nav-cta { padding: 8px 12px; font-size: 12px; }
+      
+      .hero-content { max-width: 100%; padding: 120px 16px 40px }
+      .hero-h1 { font-size: 32px; letter-spacing: -1px }
+      .hero-sub { font-size: 15px; margin-bottom: 24px }
+      .hero-btns { flex-direction: column; align-items: center; gap: 12px }
+      .btn-primary, .btn-secondary { width: 100%; max-width: 320px; padding: 14px 24px; font-size: 15px; text-align: center }
+      .section, .how-section, .cta-section { padding: 60px 16px }
+      .section-heading { font-size: 26px }
+      .section-desc { font-size: 15px }
+      .steps { flex-direction: column; align-items: center; gap: 8px }
+      .step { min-width: auto; width: 100%; max-width: 320px }
+      .step-line { display: none !important }
+      .trust-bar { gap: 20px; margin: 0; padding: 40px 16px; flex-wrap: wrap }
+      .trust-item { min-width: calc(33% - 16px) }
+      .cta-box { padding: 36px 20px; border-radius: 20px }
+      .cta-box h2 { font-size: 24px }
+      footer { padding: 32px 16px 24px }
+      .footer-top { flex-direction: column; gap: 24px }
+      #chat-window { width: calc(100% - 40px); right: 20px; bottom: 90px; }
+      #chat-icon { right: 20px; bottom: 20px; }
+    }
+
+    @media(max-width:480px) {
+      nav { padding: 10px 12px }
+      .nav-brand { font-size: 18px; gap: 6px }
+      .nav-brand span { font-size: 22px }
+      .nav-cta { padding: 7px 14px; font-size: 12px; border-radius: 8px }
+      .hero { min-height: 100vh; min-height: 100dvh }
+      .hero-content { padding: 100px 12px 20px }
+      .hero-badge { font-size: 11px; padding: 6px 12px }
+      .hero-h1 { font-size: 28px; letter-spacing: -0.5px; margin-bottom: 14px }
+      .hero-sub { font-size: 14px; line-height: 1.5; margin-bottom: 20px }
+      .hero-btns { gap: 10px }
+      .btn-primary, .btn-secondary { max-width: 100%; padding: 13px 20px; font-size: 14px; border-radius: 12px }
+      .hero-glow { width: 300px; height: 300px }
+      .section, .how-section, .cta-section { padding: 48px 12px }
+      .section-tag { font-size: 10px; letter-spacing: 1.5px }
+      .section-heading { font-size: 22px; letter-spacing: -0.5px }
+      .section-desc { font-size: 14px }
+      .step-num { width: 40px; height: 40px; font-size: 16px }
+      .step-icon { font-size: 28px; margin-bottom: 8px }
+      .step h4 { font-size: 15px }
+      .step p { font-size: 12px }
+      .trust-bar { gap: 16px; padding: 32px 12px }
+      .trust-item { min-width: calc(33% - 12px) }
+      .trust-item .t-icon { font-size: 22px; margin-bottom: 4px }
+      .trust-item .t-text { font-size: 11px }
+      .cta-box { padding: 28px 16px; border-radius: 16px }
+      .cta-box h2 { font-size: 20px }
+      .cta-box p { font-size: 14px; margin-bottom: 20px }
+      .lang-tag { font-size: 10px; padding: 3px 8px }
+      footer { padding: 24px 12px 20px }
+      .footer-brand h3 { font-size: 18px }
+      .footer-brand p { font-size: 12px }
+      .footer-col h4 { font-size: 11px; margin-bottom: 8px }
+      .footer-col a { font-size: 13px; margin-bottom: 6px }
+      .footer-bottom { font-size: 11px }
+      .problem-section { padding: 48px 12px }
+      .problem-stats-row { gap: 12px; margin: 32px 0 40px }
+      .problem-stat-card { min-width: calc(50% - 12px); max-width: none; padding: 20px 14px }
+      .problem-stat-num { font-size: 26px }
+      .problem-stat-label { font-size: 11px }
+      .lang-selector { padding: 4px 8px; font-size: 11px; }
+    }
+  </style>
+<style>
+  .pwa-file-preview { margin-top: 8px; display: flex; flex-direction: column; gap: 8px; }
+  .pwa-file-card {
+    display: flex; align-items: center; gap: 10px;
+    border: 1px solid #E5E7EB; border-radius: 10px; padding: 10px;
+    font-family: Inter, sans-serif; font-size: 13px;
+  }
+  .pwa-file-card.loading { opacity: 0.6; }
+  .pwa-file-thumb { width: 48px; height: 48px; object-fit: cover; border-radius: 6px; }
+  .pwa-file-info { display: flex; flex-direction: column; gap: 2px; }
+  .pwa-file-name { font-weight: 600; color: #1A1A2E; }
+  .pwa-file-status { color: #6B7280; }
+  .pwa-file-savings { color: #138808; font-weight: 600; font-size: 12px; }
+  .pwa-file-status.error { color: #DC2626; }
+</style><style>
+      #pwa-draft-modal-overlay {
+        position: fixed; inset: 0; z-index: 99990;
+        background: rgba(0,0,0,0.55); backdrop-filter: blur(6px);
+        display: flex; align-items: flex-end; justify-content: center;
+        padding: 16px; opacity: 0; transition: opacity 0.3s;
+      }
+      #pwa-draft-modal-overlay.show { opacity: 1; }
+      #pwa-draft-modal {
+        background: #fff; border-radius: 24px 24px 20px 20px;
+        padding: 28px 24px; width: 100%; max-width: 480px;
+        box-shadow: 0 -8px 40px rgba(0,0,0,0.15);
+        transform: translateY(60px); transition: transform 0.4s cubic-bezier(0.34,1.56,0.64,1);
+        font-family: 'Inter', sans-serif;
+      }
+      #pwa-draft-modal-overlay.show #pwa-draft-modal { transform: translateY(0); }
+      .pwa-draft-modal-header { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; }
+      .pwa-draft-modal-icon { font-size: 32px; }
+      .pwa-draft-modal-title { font-size: 18px; font-weight: 800; color: #1A1A2E; }
+      .pwa-draft-modal-sub { font-size: 13px; color: #6B7280; margin-top: 2px; }
+      .pwa-draft-cards { display: flex; flex-direction: column; gap: 12px; margin-bottom: 20px; max-height: 300px; overflow-y: auto; }
+      .pwa-draft-card {
+        border: 1.5px solid #E5E7EB; border-radius: 14px; padding: 14px 16px;
+        cursor: pointer; transition: all 0.2s; position: relative;
+      }
+      .pwa-draft-card:hover { border-color: #FF6B00; background: rgba(255,107,0,0.03); }
+      .pwa-draft-card-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+      .pwa-draft-card-type { font-size: 13px; font-weight: 700; color: #1A1A2E; }
+      .pwa-draft-card-time { font-size: 11px; color: #9CA3AF; }
+      .pwa-draft-progress-track { background: #F3F4F6; border-radius: 99px; height: 6px; overflow: hidden; }
+      .pwa-draft-progress-fill { background: linear-gradient(90deg, #FF6B00, #FF8C38); height: 100%; border-radius: 99px; transition: width 0.5s ease; }
+      .pwa-draft-progress-label { font-size: 11px; color: #6B7280; margin-top: 5px; }
+      .pwa-draft-card-actions { display: flex; gap: 8px; margin-top: 12px; }
+      .pwa-draft-btn-resume {
+        flex: 1; background: linear-gradient(135deg, #FF6B00, #FF8C38);
+        color: #fff; border: none; border-radius: 8px; padding: 9px 12px;
+        font-size: 13px; font-weight: 700; cursor: pointer; font-family: inherit;
+      }
+      .pwa-draft-btn-discard {
+        background: #F3F4F6; color: #6B7280; border: none; border-radius: 8px;
+        padding: 9px 12px; font-size: 13px; font-weight: 600; cursor: pointer; font-family: inherit;
+      }
+      .pwa-draft-modal-skip { width: 100%; background: none; border: none; color: #9CA3AF;
+        font-size: 13px; cursor: pointer; font-family: inherit; padding: 8px; }
+    </style><style>
+      /* ── Sync FAB ───────────────────────── */
+      #pwa-sync-fab {
+        position: fixed; bottom: 88px; right: 24px; z-index: 9990;
+        width: 52px; height: 52px; border-radius: 50%;
+        background: linear-gradient(135deg, #1A73E8, #1557B0);
+        border: none; color: #fff; cursor: pointer;
+        box-shadow: 0 4px 20px rgba(26,115,232,0.4);
+        display: flex; align-items: center; justify-content: center;
+        font-size: 20px; transition: transform 0.2s;
+        font-family: Inter, sans-serif;
+      }
+      #pwa-sync-fab:hover { transform: scale(1.08); }
+      #pwa-sync-fab .fab-badge {
+        position: absolute; top: -4px; right: -4px;
+        background: #DC2626; color: #fff; border-radius: 99px;
+        font-size: 10px; font-weight: 700; min-width: 18px; height: 18px;
+        display: none; align-items: center; justify-content: center; padding: 0 4px;
+        border: 2px solid #fff;
+      }
+      #pwa-sync-fab .fab-badge.show { display: flex; }
+
+      /* ── Dashboard Panel ────────────────── */
+      #pwa-sync-dashboard {
+        position: fixed; bottom: 150px; right: 16px; z-index: 9989;
+        width: 320px; background: #fff; border-radius: 20px;
+        box-shadow: 0 8px 40px rgba(0,0,0,0.18); border: 1px solid #E5E7EB;
+        font-family: Inter, sans-serif; overflow: hidden;
+        transform: translateY(20px) scale(0.95); opacity: 0;
+        pointer-events: none; transition: all 0.25s cubic-bezier(0.34,1.56,0.64,1);
+      }
+      #pwa-sync-dashboard.open { transform: translateY(0) scale(1); opacity: 1; pointer-events: auto; }
+      .psd-header {
+        padding: 16px 18px 12px; background: linear-gradient(135deg, #1A73E8, #1557B0);
+        color: #fff; display: flex; align-items: center; justify-content: space-between;
+      }
+      .psd-header-title { font-size: 15px; font-weight: 800; }
+      .psd-header-sub { font-size: 11px; opacity: 0.8; margin-top: 2px; }
+      .psd-close { background: none; border: none; color: #fff; cursor: pointer; font-size: 18px; }
+      .psd-stats { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1px; background: #E5E7EB; }
+      .psd-stat { background: #fff; padding: 14px 10px; text-align: center; }
+      .psd-stat-val { font-size: 22px; font-weight: 800; color: #1A1A2E; }
+      .psd-stat-val.orange { color: #FF6B00; }
+      .psd-stat-val.red { color: #DC2626; }
+      .psd-stat-val.green { color: #138808; }
+      .psd-stat-label { font-size: 10px; color: #9CA3AF; margin-top: 2px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+      .psd-section { padding: 14px 16px; border-bottom: 1px solid #F3F4F6; }
+      .psd-section-title { font-size: 11px; font-weight: 700; color: #9CA3AF; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 10px; }
+      .psd-last-sync { font-size: 13px; color: #374151; }
+      .psd-status-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 6px; }
+      .psd-status-dot.online { background: #138808; }
+      .psd-status-dot.offline { background: #F59E0B; animation: pwa-pulse 1.5s infinite; }
+      .psd-queue-list { max-height: 150px; overflow-y: auto; display: flex; flex-direction: column; gap: 6px; }
+      .psd-queue-item { display: flex; align-items: center; justify-content: space-between; font-size: 12px; background: #F9FAFB; border-radius: 8px; padding: 8px 10px; }
+      .psd-queue-item-type { font-weight: 600; color: #374151; }
+      .psd-queue-item-status { font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 99px; }
+      .psd-queue-item-status.pending { background: #FEF3C7; color: #92400E; }
+      .psd-queue-item-status.failed { background: #FEE2E2; color: #991B1B; }
+      .psd-actions { display: flex; gap: 8px; padding: 12px 16px; }
+      .psd-btn { flex: 1; padding: 9px; border-radius: 8px; font-size: 12px; font-weight: 700; cursor: pointer; font-family: inherit; border: none; }
+      .psd-btn-primary { background: linear-gradient(135deg,#FF6B00,#FF8C38); color: #fff; }
+      .psd-btn-secondary { background: #F3F4F6; color: #374151; border: 1px solid #E5E7EB; }
+      .psd-btn-danger { background: #FEE2E2; color: #DC2626; }
+      .psd-syncing-anim { display: inline-block; animation: psd-spin 1s linear infinite; }
+      @keyframes psd-spin { to { transform: rotate(360deg); } }
+      .psd-empty { text-align: center; color: #9CA3AF; font-size: 13px; padding: 16px; }
+    </style><style>
+      /* ── PWA Status Bar ─────────────────── */
+      #pwa-status-bar {
+        position: fixed; top: 72px; left: 50%; transform: translateX(-50%);
+        z-index: 9999; display: flex; align-items: center; gap: 10px;
+        padding: 10px 20px; border-radius: 999px;
+        font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 600;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+        transition: all 0.3s cubic-bezier(0.34,1.56,0.64,1);
+        opacity: 0; pointer-events: none; white-space: nowrap;
+      }
+      #pwa-status-bar.show { opacity: 1; pointer-events: auto; }
+      #pwa-status-bar.syncing { background: #1A73E8; color: #fff; }
+      #pwa-status-bar.success { background: #138808; color: #fff; }
+      #pwa-status-bar.queued  { background: #F59E0B; color: #000; }
+      #pwa-status-bar.error   { background: #DC2626; color: #fff; }
+
+      /* ── Offline Banner ─────────────────── */
+      #pwa-offline-banner {
+        position: fixed; bottom: 0; left: 0; right: 0; z-index: 9998;
+        background: #1A1A2E; color: #fff;
+        padding: 12px 20px; display: none;
+        align-items: center; justify-content: space-between;
+        font-family: 'Inter', sans-serif; font-size: 13px;
+        box-shadow: 0 -4px 20px rgba(0,0,0,0.2);
+      }
+      #pwa-offline-banner.show { display: flex; }
+      #pwa-offline-banner .pwa-offline-left { display: flex; align-items: center; gap: 8px; }
+      #pwa-offline-banner .pwa-offline-dot {
+        width: 8px; height: 8px; border-radius: 50%; background: #F59E0B;
+        animation: pwa-pulse 1.5s infinite;
+      }
+      @keyframes pwa-pulse { 0%,100% { opacity:1; } 50% { opacity: 0.3; } }
+      #pwa-offline-badge {
+        background: #F59E0B; color: #000; border-radius: 999px;
+        padding: 2px 10px; font-size: 11px; font-weight: 700;
+      }
+
+      /* ── Install Banner ─────────────────── */
+      #pwa-install-banner {
+        position: fixed; bottom: 60px; left: 16px; right: 16px; z-index: 9997;
+        background: linear-gradient(135deg, #FF6B00, #FF8C38);
+        color: #fff; border-radius: 16px; padding: 16px 20px;
+        display: none; align-items: center; justify-content: space-between;
+        gap: 12px; font-family: 'Inter', sans-serif;
+        box-shadow: 0 8px 32px rgba(255,107,0,0.4);
+        animation: pwa-slide-up 0.4s ease;
+      }
+      @keyframes pwa-slide-up { from { transform: translateY(100px); opacity:0; } to { transform: translateY(0); opacity:1; } }
+      #pwa-install-banner.show { display: flex; }
+      #pwa-install-banner p { margin: 0; font-size: 13px; font-weight: 600; flex: 1; }
+      #pwa-install-btn { background: #fff; color: #FF6B00; border: none;
+        padding: 8px 18px; border-radius: 8px; font-weight: 700; font-size: 13px;
+        cursor: pointer; white-space: nowrap; }
+      #pwa-install-dismiss { background: none; border: none; color: rgba(255,255,255,0.8);
+        font-size: 20px; cursor: pointer; padding: 0 4px; }
+
+      /* ── Draft Indicators ───────────────── */
+      .pwa-draft-indicator {
+        display: inline-block; font-size: 12px; color: #138808; font-weight: 600;
+        padding: 4px 10px; background: rgba(19,136,8,0.08); border-radius: 6px;
+        margin-bottom: 8px; transition: opacity 0.5s;
+      }
+      .pwa-draft-indicator.hide { opacity: 0; }
+      .pwa-restore-banner {
+        display: flex; align-items: center; justify-content: space-between;
+        background: #EFF6FF; border: 1px solid #BFDBFE; border-radius: 10px;
+        padding: 10px 14px; font-size: 13px; color: #1E40AF; margin-bottom: 12px;
+        gap: 10px;
+      }
+      .pwa-restore-dismiss { background: none; border: none; color: #1E40AF;
+        font-weight: 700; cursor: pointer; font-size: 12px; }
+    </style><style>
+      /* ── Floating Install Button ──────────────── */
+      #pwa-floating-install {
+        position: fixed;
+        bottom: 24px;
+        left: 24px;
+        z-index: 9980;
+        background: linear-gradient(135deg, #138808, #0f6e06);
+        color: white;
+        border: none;
+        border-radius: 99px;
+        padding: 12px 20px;
+        font-family: 'Inter', sans-serif;
+        font-weight: 700;
+        font-size: 14px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        box-shadow: 0 4px 15px rgba(19, 136, 8, 0.4);
+        cursor: pointer;
+        transform: translateY(150px);
+        transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+      }
+      #pwa-floating-install.show {
+        transform: translateY(0);
+      }
+      #pwa-floating-install .icon {
+        font-size: 18px;
+        animation: pwa-bounce 2s infinite;
+      }
+
+      @keyframes pwa-bounce {
+        0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+        40% { transform: translateY(-4px); }
+        60% { transform: translateY(-2px); }
+      }
+
+      /* ── Premium Install Modal ────────────────── */
+      #pwa-install-overlay {
+        position: fixed; inset: 0; z-index: 99999;
+        background: rgba(0,0,0,0.6); backdrop-filter: blur(4px);
+        display: flex; align-items: flex-end; justify-content: center;
+        opacity: 0; pointer-events: none; transition: opacity 0.3s;
+      }
+      #pwa-install-overlay.show { opacity: 1; pointer-events: auto; }
+      
+      #pwa-install-modal {
+        background: #fff; width: 100%; max-width: 400px;
+        border-radius: 24px 24px 0 0; padding: 32px 24px 40px;
+        transform: translateY(100%); transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+        font-family: 'Inter', sans-serif; text-align: center;
+      }
+      #pwa-install-overlay.show #pwa-install-modal { transform: translateY(0); }
+
+      .pwa-inst-logo {
+        width: 64px; height: 64px; border-radius: 16px;
+        background: linear-gradient(135deg, #FF6B00, #FF8C38);
+        display: flex; align-items: center; justify-content: center;
+        font-size: 32px; margin: 0 auto 20px;
+        box-shadow: 0 8px 20px rgba(255,107,0,0.3);
+      }
+      .pwa-inst-title { font-size: 22px; font-weight: 800; color: #1A1A2E; margin-bottom: 8px; }
+      .pwa-inst-desc { font-size: 14px; color: #6B7280; margin-bottom: 24px; line-height: 1.5; }
+      
+      .pwa-inst-benefits {
+        text-align: left; margin-bottom: 32px; background: #F9FAFB;
+        padding: 16px; border-radius: 16px; border: 1px solid #E5E7EB;
+      }
+      .pwa-inst-benefit { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; font-size: 14px; color: #374151; font-weight: 500; }
+      .pwa-inst-benefit:last-child { margin-bottom: 0; }
+      .pwa-inst-check { color: #138808; font-weight: bold; }
+
+      .pwa-inst-actions { display: flex; flex-direction: column; gap: 12px; }
+      .pwa-inst-btn-main {
+        background: linear-gradient(135deg, #FF6B00, #FF8C38); color: #fff;
+        border: none; padding: 16px; border-radius: 12px; font-size: 16px; font-weight: 700;
+        cursor: pointer; box-shadow: 0 4px 15px rgba(255,107,0,0.3);
+      }
+      .pwa-inst-btn-skip {
+        background: none; border: none; color: #9CA3AF; font-size: 14px;
+        font-weight: 600; cursor: pointer; padding: 8px;
+      }
+    </style></head>
+
+<body>
+  <nav id="navbar">
+    <a href="/" class="nav-brand"><span data-i18n="Sarpanch AI">Sarpanch AI</span></a>
+    
+    <ul class="nav-links">
+      <li class="dropdown">
+        <a href="javascript:void(0)" class="dropbtn" style="display: flex; align-items: center; gap: 4px;">
+          <span data-i18n="Explore Features">Explore Features</span> 
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"></path></svg>
+        </a>
+        <div class="dropdown-content">
+          <a href="/#features" data-i18n="Today's Plan">Today's Plan</a>
+          <a href="/#how" data-i18n="Disease Detection">Disease Detection</a>
+          <a href="#" data-i18n="Market Intelligence">Market Intelligence</a>
+          <a href="#" data-i18n="Weather Alerts">Weather Alerts</a>
+        </div>
+      </li>
+      <li><a href="/about.html" data-i18n="About Us">About Us</a></li>
+      <li><a href="/nearby.html" data-i18n="Nearby Markets">Nearby Markets</a></li>
+      
+      <li class="dropdown">
+        <a href="javascript:void(0)" class="dropbtn" style="display: flex; align-items: center; gap: 4px;">
+          <span data-i18n="AgroCare">AgroCare</span>
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"></path></svg>
+        </a>
+        <div class="dropdown-content agrocare-dropdown">
+          <a href="kam-credit-score.html" class="dropdown-item">
+            <div style="display: flex; flex-direction: column;">
+              <span style="font-weight: 700;" data-i18n="Kam Credit Score">Kam Credit Score</span>
+              <span style="font-size: 12px; color: var(--muted);" data-i18n="Flexible loans with no EMI">Flexible loans with no EMI</span>
+            </div>
+          </a>
+          <div class="nested-dropdown" id="jeevanKavachNested">
+            <a href="javascript:void(0)" class="dropdown-item nested-link" style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+              <div style="display: flex; flex-direction: column;">
+                <span style="font-weight: 700;" data-i18n="Jeevan Kavach">Jeevan Kavach</span>
+                <span style="font-size: 11px; color: var(--muted);" data-i18n="Insurance &amp; protection">Insurance &amp; protection</span>
+              </div>
+            </a>
+            <div class="nested-dropdown-content">
+              <a href="fasal-suraksha.html" class="dropdown-item" data-i18n="Fasal Suraksha">Fasal Suraksha</a>
+              <a href="jeevan-suraksha.html" class="dropdown-item" data-i18n="Jeevan Suraksha">Jeevan Suraksha</a>
+            </div>
+          </div>
+        </div>
+      </li>
+    </ul>
+
+    <div class="nav-buttons">
+      <select id="lang-selector" class="lang-selector" onchange="changeLanguage()">
+        <option value="en">English</option>
+        <option value="hi">हिंदी</option>
+        <option value="kn">ಕನ್ನಡ</option>
+      </select>
+      <a href="https://sarpanch-ai.web.app/" target="_blank" class="nav-cta" data-i18n="Try Sarpanch AI">Try Sarpanch AI</a>
+      
+      <!-- HAMBURGER MENU (Hidden on Desktop, Visible on Mobile) -->
+      <div class="hamburger" onclick="toggleMobileMenu()">
+        <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+      </div>
+    </div>
+  </nav>
+
+  <!-- ═══════════════════════════════════════════════
+       CINEMATIC AETHERA HERO SECTION
+  ═══════════════════════════════════════════════ -->
+  <section class="aeth-hero" id="aethera-hero">
+
+    <!-- Video Background -->
+    <div class="aeth-video-wrap" id="aethVideoWrap">
+      <video id="aethVideo" src="https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260328_083109_283f3553-e28f-428b-a723-d639c617eb2b.mp4" muted="" playsinline="" preload="auto" style="opacity: 1;">
+      </video>
+      <div class="aeth-grad"></div>
+    </div>
+
+
+    <!-- Headline + CTA -->
+    <div class="aeth-content">
+      <h1 class="aeth-h1">
+        Built for <em>Fields,</em> Powered by <em>Intelligence.</em>
+      </h1>
+      <p class="aeth-desc">
+        Empowering farmers with real-time market intelligence and smart agricultural tools to make every farming decision simpler, smarter and more profitable.
+      </p>
+      <button class="aeth-hero-btn" onclick="document.getElementById('features').scrollIntoView({behavior:'smooth'})">Begin Journey</button>
+    </div>
+
+  </section>
+  <!-- ═══════════════════════════════════════════════ -->
+
+
+
+  <section class="section" id="features" style="padding-bottom: 0;">
+    <div class="reveal" style="text-align: center;">
+      <div class="section-tag" data-i18n="⚡ Smart Farming Features">⚡ Smart Farming Features</div>
+      <h2 class="section-heading" style="text-align: center;"><span data-i18n="Built for">Built for</span> <span style="color:var(--saffron)" data-i18n="Your Farm's Success">Your Farm's Success</span></h2>
+      <p class="section-desc" style="margin: 0 auto;" data-i18n="Every feature designed to monitor weather, predict disease, and maximize your yield — powered entirely by AI.">Every feature designed to monitor weather, predict disease, and maximize your yield — powered entirely by AI.</p>
+    </div>
+
+    <div id="scroll-container" class="scroll-container reveal">
+        <div class="perspective-container">
+            <div id="canvas-container" class="canvas-container"><canvas width="1120" height="1040" style="display: block; width: 1120px; height: 1040px;"></canvas></div>
+        </div>
+    </div>
+
+  </section>
+
+  <section class="problem-section" id="about">
+    <div style="max-width:1100px;margin:0 auto">
+
+      <div class="reveal" style="text-align:center">
+        <div class="section-tag" data-i18n="🔥 The Challenge">🔥 The Challenge</div>
+        <h2 class="section-heading">
+          <span data-i18n="India's Farming Crisis is">India's Farming Crisis is</span> <span style="color:var(--saffron)" data-i18n="Silent">Silent</span> <span data-i18n="— and Costly">— and Costly</span>
+        </h2>
+        <p class="section-desc" style="margin:0 auto;max-width:620px" data-i18n="Millions of farmers lack real-time advice. Crop loss goes undetected for weeks. Profits vanish — not because farmers don't work hard, but because no one provides timely intelligence.">Millions of farmers lack real-time advice. Crop loss goes undetected for weeks. Profits vanish — not because farmers don't work hard, but because no one provides timely intelligence.</p>
+      </div>
+
+      <div class="problem-stats-row reveal">
+        <div class="problem-stat-card">
+          <div class="problem-stat-num" data-i18n="150M+">150M+</div>
+          <div class="problem-stat-label" data-i18n="Farmers with no real-time farming advice">Farmers with no real-time farming advice</div>
+        </div>
+        <div class="problem-stat-card">
+          <div class="problem-stat-num" data-i18n="85%">85%</div>
+          <div class="problem-stat-label" data-i18n="Use outdated methods for crop decisions">Use outdated methods for crop decisions</div>
+        </div>
+        <div class="problem-stat-card">
+          <div class="problem-stat-num" data-i18n="₹10K+">₹10K+</div>
+          <div class="problem-stat-label" data-i18n="Average loss per acre due to delayed action">Average loss per acre due to delayed action</div>
+        </div>
+        <div class="problem-stat-card">
+          <div class="problem-stat-num" data-i18n="0">0</div>
+          <div class="problem-stat-label" data-i18n="Real-time intelligence for most small farms">Real-time intelligence for most small farms</div>
+        </div>
+      </div>
+
+      <div class="reveal" style="text-align:center;margin-bottom:36px">
+        <div class="section-tag" data-i18n="💡 Our Solution">💡 Our Solution</div>
+        <h2 class="section-heading">
+          <span data-i18n="How">How</span> <span style="color:var(--saffron)" data-i18n="Sarpanch AI">Sarpanch AI</span> <span data-i18n="Fixes This">Fixes This</span>
+        </h2>
+        <p class="section-desc" style="margin:0 auto;max-width:560px" data-i18n="No guesswork. No delays. Just data-driven decisions — and let AI do the rest.">No guesswork. No delays. Just data-driven decisions — and let AI do the rest.</p>
+      </div>
+
+      <!-- IMAGE SLIDER WITH X-AXIS SCROLL (HORIZONTAL) -->
+      <div class="banner-slider-container reveal" id="bannerSliderContainer">
+        <div class="banner-slider-track" id="bannerSliderTrack" style="transition: none; transform: translateX(0px);">
+          <img src="crop-disease-banner.png" alt="Crop Disease Detection" class="slider-img">
+          <img src="market-banner.png" alt="Market Intelligence" class="slider-img">
+          <img src="weather-banner.png" alt="Weather Updates" class="slider-img">
+          <!-- Clone of the first image for smooth infinite loop -->
+          <img src="crop-disease-banner.png" alt="Crop Disease Detection" class="slider-img">
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <section class="how-section" id="how">
+    <div style="max-width:1200px;margin:0 auto">
+      <div class="reveal" style="text-align:center">
+        <div class="section-tag" data-i18n="🔄 How It Works">🔄 How It Works</div>
+        <h2 class="section-heading" data-i18n="3 Steps to Smarter Farming">3 Steps to Smarter Farming</h2>
+        <p class="section-desc" style="margin:0 auto" data-i18n="No complex setup, no equipment — start optimizing your farm in under 2 minutes.">No complex setup, no equipment — start optimizing your farm in under 2 minutes.</p>
+      </div>
+      <div class="steps">
+        <div class="step reveal">
+          <div class="step-num">1</div>
+          <div class="step-icon">🌾</div>
+          <h4 data-i18n="Check Your Plan">Check Your Plan</h4>
+          <p data-i18n="Open Sarpanch AI daily for your personalized crop plan. No guesswork — just clear actions.">Open Sarpanch AI daily for your personalized crop plan. No guesswork — just clear actions.</p>
+          <div class="step-line"></div>
+        </div>
+        <div class="step reveal">
+          <div class="step-num">2</div>
+          <div class="step-icon">🤖</div>
+          <h4 data-i18n="AI Analyzes Field Data">AI Analyzes Field Data</h4>
+          <p data-i18n="Our engine tracks weather, soil, and market trends automatically — building your farm's health profile.">Our engine tracks weather, soil, and market trends automatically — building your farm's health profile.</p>
+          <div class="step-line"></div>
+        </div>
+        <div class="step reveal">
+          <div class="step-num">3</div>
+          <div class="step-icon">📈</div>
+          <h4 data-i18n="Optimize Yield">Optimize Yield</h4>
+          <p data-i18n="Get weekly farm scores, early disease alerts &amp; adaptive guidance to maximize profit and reduce risk.">Get weekly farm scores, early disease alerts &amp; adaptive guidance to maximize profit and reduce risk.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="trust-bar reveal" id="trust">
+    <div class="trust-item"><div class="t-icon">🌾</div><div class="t-text" data-i18n="AI-Powered Insights">AI-Powered Insights</div></div>
+    <div class="trust-item"><div class="t-icon">⭐</div><div class="t-text" data-i18n="4.8 Avg Rating">4.8 Avg Rating</div></div>
+    <div class="trust-item"><div class="t-icon">🔒</div><div class="t-text" data-i18n="Accurate &amp; Reliable">Accurate &amp; Reliable</div></div>
+    <div class="trust-item"><div class="t-icon">💬</div><div class="t-text" data-i18n="6 Languages">6 Languages</div></div>
+    <div class="trust-item"><div class="t-icon">⚠️</div><div class="t-text" data-i18n="Crop Alerts">Crop Alerts</div></div>
+    <div class="trust-item"><div class="t-icon">📱</div><div class="t-text" data-i18n="Mobile App">Mobile App</div></div>
+  </div>
+
+  <section class="cta-section" id="download">
+    <div class="cta-box reveal">
+      <h2><span data-i18n="Take Control of">Take Control of</span> <span style="color:var(--saffron)" data-i18n="Your Farm's Future">Your Farm's Future</span> <span data-i18n="— Starting Today">— Starting Today</span></h2>
+      <p data-i18n="Join thousands of farmers who are already using Sarpanch AI to monitor crop health, track market prices, and receive early disease alerts.">Join thousands of farmers who are already using Sarpanch AI to monitor crop health, track market prices, and receive early disease alerts.</p>
+      <div style="display:flex;gap:14px;justify-content:center;flex-wrap:wrap">
+        <a href="https://shepherdcare.pages.dev/" target="_blank" class="btn-primary" style="font-size:18px;padding:18px 48px" data-i18n="Shepherd's Watch">Shepherd's Watch</a>
+      </div>
+      <p style="margin-top:16px;font-size:13px;color:var(--muted)" data-i18n="Free to use. No account required. Android only.">Free to use. No account required. Android only.</p>
+    </div>
+  </section>
+
+  <footer>
+    <div class="footer-top">
+      <div class="footer-brand">
+        <h3><span data-i18n="Sarpanch AI">Sarpanch AI</span></h3>
+        <p data-i18n="India's first AI-powered smart farming companion. Analyzing weather, market prices, and crop conditions to maximize yield — for every farmer.">India's first AI-powered smart farming companion. Analyzing weather, market prices, and crop conditions to maximize yield — for every farmer.</p>
+      </div>
+      <div class="footer-col">
+        <h4 data-i18n="Platform">Platform</h4>
+        <a href="https://sarpanch-ai.web.app/" target="_blank" data-i18n="Try Sarpanch AI">Try Sarpanch AI</a>
+        <a href="#features" data-i18n="Features">Features</a>
+        <a href="#how" data-i18n="How It Works">How It Works</a>
+      </div>
+      <div class="footer-col">
+        <h4 data-i18n="Farming Tools">Farming Tools</h4>
+        <a href="#" data-i18n="Disease Detection">Disease Detection</a>
+        <a href="#" data-i18n="Market Intelligence">Market Intelligence</a>
+        <a href="#" data-i18n="Weather Alerts">Weather Alerts</a>
+      </div>
+      <div class="footer-col">
+        <h4 data-i18n="Resources">Resources</h4>
+        <a href="/about.html" data-i18n="About Us">About Us</a>
+        <a href="#" data-i18n="Help Center">Help Center</a>
+        <a href="#" data-i18n="Privacy Policy">Privacy Policy</a>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span data-i18n="© 2026 Sarpanch AI. Made with ❤️ for Bharat.">© 2026 Sarpanch AI. Made with ❤️ for Bharat.</span>
+      <div class="lang-tags">
+        <span class="lang-tag" data-i18n="🇮🇳 Designed for Indian Farmers">🇮🇳 Designed for Indian Farmers</span>
+      </div>
+    </div>
+  </footer>
+
+  <div id="chat-icon" onclick="toggleChat()">💬</div>
+  <div id="chat-window">
+    <div id="chat-header">
+      <span data-i18n="Ask Sarpanch AI">Ask Sarpanch AI</span>
+      <span onclick="toggleChat()" style="cursor:pointer; font-size:18px;">✖</span>
+    </div>
+    <div id="chat-messages">
+      <div class="chat-msg bot-msg" id="chat-welcome" data-i18n="Hello farmer! How can Sarpanch AI help your farm today?">Hello farmer! How can Sarpanch AI help your farm today?</div>
+      <div class="quick-replies">
+        <span onclick="sendQuickReply(this)" data-i18n="How does weather detection work?">How does weather detection work?</span>
+        <span onclick="sendQuickReply(this)" data-i18n="What are today's crop alerts?">What are today's crop alerts?</span>
+      </div>
+    </div>
+    <div id="chat-input-area">
+      <button class="mic-btn" onclick="startDictation()" title="Use Microphone">🎤</button>
+      <input type="text" id="chat-input" data-i18n-placeholder="Ask about weather, prices, or diseases..." placeholder="Ask about weather, prices, or diseases..." onkeypress="if(event.key === 'Enter') sendMessage()" style="">
+      <button class="send-btn" onclick="sendMessage()" data-i18n="Send">Send</button>
+    </div>
+  </div>
+
+  <script src="https://unpkg.com/i18next/i18next.min.js"></script>
+
+  <script>
+    window.addEventListener('scroll', () => {
+      const nav = document.getElementById('navbar');
+      if (nav) { if (window.scrollY > 50) { nav.classList.add('scrolled'); } else { nav.classList.remove('scrolled'); } }
+    });
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); observer.unobserve(e.target) } });
+    }, { threshold: 0.15 });
+    document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+    const numObserver = new IntersectionObserver((entries) => {
+      entries.forEach(e => {
+        if (e.isIntersecting) { e.target.querySelectorAll('.num').forEach(n => { n.style.opacity = '1'; }); numObserver.unobserve(e.target); }
+      });
+    }, { threshold: 0.3 });
+    document.querySelectorAll('.hero-stats').forEach(el => numObserver.observe(el));
+
+    const BACKEND_URL = (window.location.hostname === '127.0.0.1' || window.location.hostname === 'localhost') ? "" : "https://vaaniai-3hgv.onrender.com"; 
+
+    function toggleChat() {
+      const chatWin = document.getElementById('chat-window');
+      chatWin.classList.toggle('show');
+    }
+
+    function sendQuickReply(el) {
+      document.getElementById('chat-input').value = el.innerText;
+      sendMessage();
+    }
+
+    // Toggle Mobile Navigation Menu
+    function toggleMobileMenu() {
+      const navLinks = document.querySelector('.nav-links');
+      navLinks.classList.toggle('active');
+    }
+
+    async function sendMessage() {
+      const input = document.getElementById('chat-input');
+      const msg = input.value.trim();
+      if(!msg) return;
+      
+      const msgArea = document.getElementById('chat-messages');
+      input.value = '';
+      
+      msgArea.innerHTML += `<div class="chat-msg user-msg">${msg}</div>`;
+      msgArea.scrollTop = msgArea.scrollHeight;
+      
+      const loadId = 'load-' + Date.now();
+      msgArea.innerHTML += `<div class="chat-msg bot-msg" id="${loadId}">...</div>`;
+      msgArea.scrollTop = msgArea.scrollHeight;
+
+      const lang = document.getElementById('lang-selector').value;
+      try {
+        const url = BACKEND_URL ? `${BACKEND_URL}/chat` : '/chat';
+        const res = await fetch(url, {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({message: msg, language: lang})
+        });
+        const data = await res.json();
+        
+        document.getElementById(loadId).remove();
+        msgArea.innerHTML += `<div class="chat-msg bot-msg">${data.reply}</div>`;
+        msgArea.scrollTop = msgArea.scrollHeight;
+        
+        speakText(data.reply, lang);
+
+      } catch (err) {
+        document.getElementById(loadId).innerText = "Error connecting to AI.";
+      }
+    }
+
+    function speakText(text, langCode) {
+      const ut = new SpeechSynthesisUtterance(text);
+      if(langCode === 'hi') ut.lang = 'hi-IN';
+      else if(langCode === 'kn') ut.lang = 'kn-IN';
+      else ut.lang = 'en-US';
+      window.speechSynthesis.speak(ut);
+    }
+
+    // Web Speech API for voice to text feature
+    function startDictation() {
+        if (window.hasOwnProperty('webkitSpeechRecognition') || window.hasOwnProperty('SpeechRecognition')) {
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            const recognition = new SpeechRecognition();
+
+            const langCode = document.getElementById('lang-selector').value;
+            if (langCode === 'hi') recognition.lang = 'hi-IN';
+            else if (langCode === 'kn') recognition.lang = 'kn-IN';
+            else recognition.lang = 'en-US';
+
+            recognition.continuous = false;
+            recognition.interimResults = false;
+
+            const chatInput = document.getElementById('chat-input');
+            const originalPlaceholder = chatInput.placeholder;
+            chatInput.placeholder = "Listening...";
+
+            recognition.onresult = function(e) {
+                chatInput.value = e.results[0][0].transcript;
+                chatInput.placeholder = originalPlaceholder;
+                sendMessage(); // auto send after dictation completes
+            };
+
+            recognition.onerror = function(e) {
+                console.error('Speech recognition error:', e.error);
+                chatInput.placeholder = originalPlaceholder;
+            };
+
+            recognition.start();
+        } else {
+            alert("Voice recognition is not supported in your current browser.");
+        }
+    }
+
+    // --- UNIFIED I18NEXT LOGIC ---
+    const rotateWords = ["Your Crop Advisor", "Your Weather Partner", "Always Monitoring", "Market Expert", "Disease Detector", "Profit Booster"];
+    let wordIndex = 0;
+    const dynamicTextEl = document.getElementById('dynamic-text');
+
+    let savedLang = localStorage.getItem('agrosathi_lang') || 'en';
+    
+    document.addEventListener('DOMContentLoaded', () => {
+        const selector = document.getElementById('lang-selector');
+        if (selector) selector.value = savedLang;
+    });
+
+    i18next.init({
+      lng: savedLang,
+      fallbackLng: 'en',
+      resources: { en: { translation: {} } }
+    }, function(err, t) {
+      updateTranslations();
+      if (savedLang !== 'en') {
+          applyLanguage(savedLang);
+      }
+    });
+
+    function updateTranslations() {
+      const currentLang = i18next.language;
+      
+      document.querySelectorAll('[data-i18n]').forEach(el => {
+        const key = el.getAttribute('data-i18n');
+        if (currentLang === 'en') {
+            el.innerText = key; // Force revert to exact original English text
+        } else if(i18next.exists(key)) {
+            el.innerText = i18next.t(key);
+        }
+      });
+
+      document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+        const key = el.getAttribute('data-i18n-placeholder');
+        if (currentLang === 'en') {
+            el.placeholder = key; // Force revert to exact original English placeholder
+        } else if(i18next.exists(key)) {
+            el.placeholder = i18next.t(key);
+        }
+      });
+    }
+
+    async function fetchTranslationsFromAPI(langCode, keysObject) {
+      const langMap = { 'hi': 'Hindi', 'kn': 'Kannada' };
+      const targetLanguage = langMap[langCode];
+      
+      try {
+        const url = BACKEND_URL ? `${BACKEND_URL}/api/translate` : '/api/translate';
+        const response = await fetch(url, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            langCode: langCode,
+            targetLanguage: targetLanguage,
+            keysObject: keysObject
+          })
+        });
+
+        if (!response.ok) { throw new Error("Backend returned an error"); }
+        return await response.json();
+      } catch (error) {
+        console.error("Translation API Failed:", error);
+        return {};
+      }
+    }
+
+    async function applyLanguage(lang) {
+        if (!i18next.hasResourceBundle(lang, 'translation')) {
+            const selector = document.getElementById('lang-selector');
+            if (selector) {
+                selector.disabled = true;
+            }
+
+            try {
+                const englishKeys = {};
+                document.querySelectorAll('[data-i18n]').forEach(el => {
+                    const key = el.getAttribute('data-i18n');
+                    englishKeys[key] = key;
+                });
+                document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+                    const key = el.getAttribute('data-i18n-placeholder');
+                    englishKeys[key] = key;
+                });
+                
+                if (typeof rotateWords !== 'undefined') {
+                    rotateWords.forEach(word => englishKeys[word] = word);
+                }
+
+                const newTranslations = await fetchTranslationsFromAPI(lang, englishKeys);
+                
+                if (Object.keys(newTranslations).length > 0) {
+                    i18next.addResourceBundle(lang, 'translation', newTranslations, true, true);
+                }
+            } catch (error) {
+                console.error("Translation API Failed:", error);
+            } finally {
+                if (selector) {
+                    selector.disabled = false;
+                    selector.value = lang;
+                }
+            }
+        }
+        i18next.changeLanguage(lang, updateTranslations);
+    }
+
+    async function changeLanguage() {
+      const lang = document.getElementById('lang-selector').value;
+      localStorage.setItem('agrosathi_lang', lang); 
+      
+      if (lang === 'en') {
+        i18next.changeLanguage(lang, updateTranslations);
+      } else {
+        await applyLanguage(lang);
+      }
+    }
+
+    function rotateText() {
+      if (!dynamicTextEl) return;
+      dynamicTextEl.style.opacity = '0';
+      dynamicTextEl.style.transform = 'translateY(10px)';
+      
+      setTimeout(() => {
+        wordIndex = (wordIndex + 1) % rotateWords.length;
+        const newEnglishWord = rotateWords[wordIndex];
+        
+        dynamicTextEl.setAttribute('data-i18n', newEnglishWord);
+        
+        if (i18next.language === 'en') {
+            dynamicTextEl.innerText = newEnglishWord;
+        } else {
+            dynamicTextEl.innerText = i18next.exists(newEnglishWord) ? i18next.t(newEnglishWord) : newEnglishWord;
+        }
+        
+        dynamicTextEl.style.opacity = '1';
+        dynamicTextEl.style.transform = 'translateY(0)';
+      }, 400); 
+    }
+    setInterval(rotateText, 3000);
+
+    const phone3d = document.getElementById('phone3d');
+    const phoneScene = document.getElementById('phoneScene');
+    if (phone3d && phoneScene) {
+      let phoneRx = 0, phoneRy = 0, phoneTargetRx = 0, phoneTargetRy = 0;
+      let phoneAnimating = false;
+      function lerpPhone(a, b, t) { return a + (b - a) * t; }
+      function animatePhone() {
+        phoneRx = lerpPhone(phoneRx, phoneTargetRx, 0.08);
+        phoneRy = lerpPhone(phoneRy, phoneTargetRy, 0.08);
+        phone3d.style.transform = `rotateX(${phoneRx}deg) rotateY(${phoneRy}deg)`;
+        if (Math.abs(phoneRx - phoneTargetRx) > 0.05 || Math.abs(phoneRy - phoneTargetRy) > 0.05) { requestAnimationFrame(animatePhone); } else { phoneAnimating = false; }
+      }
+      document.addEventListener('mousemove', function(e) {
+        const rect = phoneScene.getBoundingClientRect();
+        const cx = rect.left + rect.width / 2;
+        const cy = rect.top + rect.height / 2;
+        const dx = e.clientX - cx;
+        const dy = e.clientY - cy;
+        const maxDist = 400;
+        phoneTargetRy = Math.max(-25, Math.min(25, (dx / maxDist) * 25));
+        phoneTargetRx = Math.max(-20, Math.min(20, -(dy / maxDist) * 20));
+        phone3d.style.animation = 'none';
+        if (!phoneAnimating) { phoneAnimating = true; animatePhone(); }
+      });
+      document.addEventListener('mouseleave', function() {
+        phoneTargetRx = 4; phoneTargetRy = -12;
+        phone3d.style.animation = 'phone-idle 6s ease-in-out infinite';
+      });
+    }
+
+    const nestedDropdown = document.getElementById('jeevanKavachNested');
+    if (nestedDropdown) {
+      nestedDropdown.addEventListener('click', function(e) {
+        if (e.target.closest('.nested-link')) { e.stopPropagation(); e.preventDefault(); nestedDropdown.classList.toggle('active'); }
+      });
+      document.addEventListener('click', function(e) {
+        if (!nestedDropdown.contains(e.target)) { nestedDropdown.classList.remove('active'); }
+      });
+    }
+
+    // BANNER SLIDER LOGIC - FIXED X-AXIS SCROLL (LEFT-TO-RIGHT)
+    document.addEventListener('DOMContentLoaded', () => {
+      const track = document.getElementById('bannerSliderTrack');
+      if (track) {
+        const slides = track.querySelectorAll('.slider-img');
+        const totalSlides = slides.length;
+        let currentSlideIndex = 0;
+
+        setInterval(() => {
+          currentSlideIndex++;
+          track.style.transition = "transform 0.6s cubic-bezier(0.25, 1, 0.5, 1)";
+          
+          // MOVES LEFT TO RIGHT (X-AXIS)
+          track.style.transform = `translateX(-${currentSlideIndex * 100}%)`;
+
+          // If we reached the cloned last slide
+          if (currentSlideIndex === totalSlides - 1) {
+            setTimeout(() => {
+              // Instantly jump back to the first real slide without animation
+              track.style.transition = "none";
+              currentSlideIndex = 0;
+              track.style.transform = `translateX(0)`;
+            }, 600); // match the transition duration
+          }
+        }, 2500); // changes every 2.5 seconds
+      }
+    });
+
+    // ── AETHERA CINEMATIC VIDEO FADE LOOP ──────────────────────────
+    (function () {
+      const video = document.getElementById('aethVideo');
+      if (!video) return;
+      const FADE = 0.5; // seconds
+      let rafId;
+
+      function tick() {
+        const { currentTime, duration, paused } = video;
+        if (!duration || paused) { rafId = requestAnimationFrame(tick); return; }
+        const remaining = duration - currentTime;
+        if (currentTime < FADE) {
+          video.style.opacity = String(Math.min(currentTime / FADE, 1));
+        } else if (remaining < FADE) {
+          video.style.opacity = String(Math.max(remaining / FADE, 0));
+        } else {
+          video.style.opacity = '1';
+        }
+        rafId = requestAnimationFrame(tick);
+      }
+
+      function handleEnded() {
+        video.style.opacity = '0';
+        setTimeout(() => {
+          video.currentTime = 0;
+          video.play().catch(() => {});
+        }, 100);
+      }
+
+      video.style.opacity = '0';
+      video.addEventListener('ended', handleEnded);
+      video.play().then(() => { rafId = requestAnimationFrame(tick); }).catch(() => {});
+    })();
+    // ───────────────────────────────────────────────────────────────
+
+  </script>
+
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const container = document.getElementById('scroll-container');
+        const canvasContainer = document.getElementById('canvas-container');
+        if(!container || !canvasContainer) return;
+
+        let isMobile = window.innerWidth <= 768;
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(45, canvasContainer.clientWidth / canvasContainer.clientHeight, 0.1, 1000);
+        camera.position.z = isMobile ? 42 : 24; 
+        const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+        renderer.setSize(canvasContainer.clientWidth, canvasContainer.clientHeight);
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2)); 
+        renderer.outputEncoding = THREE.sRGBEncoding;
+        canvasContainer.appendChild(renderer.domElement);
+
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.8);
+        scene.add(ambientLight);
+        const dirLight = new THREE.DirectionalLight(0xffffff, 1);
+        dirLight.position.set(5, 10, 15);
+        scene.add(dirLight);
+
+        const createRoundedRectShape = (width, height, radius) => {
+            const shape = new THREE.Shape();
+            const x = -width / 2; const y = -height / 2;
+            shape.moveTo(x, y + radius); shape.lineTo(x, y + height - radius);
+            shape.quadraticCurveTo(x, y + height, x + radius, y + height);
+            shape.lineTo(x + width - radius, y + height);
+            shape.quadraticCurveTo(x + width, y + height, x + width, y + height - radius);
+            shape.lineTo(x + width, y + radius);
+            shape.quadraticCurveTo(x + width, y, x + width - radius, y);
+            shape.lineTo(x + radius, y);
+            shape.quadraticCurveTo(x, y, x, y + radius);
+            return shape;
+        };
+
+        const tablet = new THREE.Group();
+        const bodyWidth = 17.77; const bodyHeight = 10; const cornerRadius = 0.5;
+        
+        const frameShape = createRoundedRectShape(bodyWidth + 0.4, bodyHeight + 0.4, cornerRadius + 0.2);
+        const frameGeo = new THREE.ExtrudeGeometry(frameShape, { depth: 0.3, bevelEnabled: false });
+        frameGeo.center(); 
+        const frameMat = new THREE.MeshStandardMaterial({ color: 0x050505, roughness: 0.6 });
+        const frame = new THREE.Mesh(frameGeo, frameMat);
+        tablet.add(frame);
+
+        const bodyShape = createRoundedRectShape(bodyWidth, bodyHeight, cornerRadius);
+        const bodyGeo = new THREE.ExtrudeGeometry(bodyShape, { depth: 0.4, bevelEnabled: false });
+        bodyGeo.center();
+        const bodyMat = new THREE.MeshStandardMaterial({ color: 0x000000, roughness: 0.8 });
+        const body = new THREE.Mesh(bodyGeo, bodyMat);
+        body.position.z = 0.05; 
+        tablet.add(body);
+
+        const textureLoader = new THREE.TextureLoader();
+        const texture = textureLoader.load('dash.png'); 
+        texture.encoding = THREE.sRGBEncoding; 
+        texture.anisotropy = renderer.capabilities.getMaxAnisotropy(); 
+        
+        const screenShape = createRoundedRectShape(bodyWidth - 0.6, bodyHeight - 0.6, cornerRadius - 0.2);
+        const screenGeo = new THREE.ShapeGeometry(screenShape);
+        screenGeo.computeBoundingBox();
+        const max = screenGeo.boundingBox.max; const min = screenGeo.boundingBox.min;
+        const uvAttribute = screenGeo.attributes.uv;
+        for (let i = 0; i < uvAttribute.count; i++) {
+            const x = screenGeo.attributes.position.getX(i); const y = screenGeo.attributes.position.getY(i);
+            uvAttribute.setXY(i, (x - min.x) / (max.x - min.x), (y - min.y) / (max.y - min.y));
+        }
+
+        const screenMat = new THREE.MeshBasicMaterial({ color: 0xffffff, map: texture });
+        const screen = new THREE.Mesh(screenGeo, screenMat);
+        screen.position.z = 0.27; 
+        tablet.add(screen);
+        scene.add(tablet);
+
+        let targetRotX = 0; let targetRotY = 0; let targetPosY = 0; let mouseX = 0; let mouseY = 0;
+
+        window.addEventListener('resize', () => {
+            isMobile = window.innerWidth <= 768;
+            camera.aspect = canvasContainer.clientWidth / canvasContainer.clientHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(canvasContainer.clientWidth, canvasContainer.clientHeight);
+            camera.position.z = isMobile ? 42 : 24;
+            updateAnimation();
+        });
+
+        const mapRange = (value, inMin, inMax, outMin, outMax) => { return ((value - inMin) * (outMax - outMin)) / (inMax - inMin) + outMin; };
+
+        const updateAnimation = () => {
+            const rect = container.getBoundingClientRect(); const windowHeight = window.innerHeight;
+            let progress = (windowHeight - rect.top) / windowHeight;
+            progress = Math.max(0, Math.min(1, progress));
+            const rotateXDeg = mapRange(progress, 0, 1, 20, 0);
+            targetRotX = rotateXDeg * (Math.PI / 180);
+            targetRotY = mapRange(progress, 0, 1, -0.05, 0.05);
+            targetPosY = mapRange(progress, 0, 1, 1.5, -1.5);
+            const scaleStart = isMobile ? 0.75 : 1.15; const scaleEnd = isMobile ? 0.95 : 1.05;
+            const scale = mapRange(progress, 0, 1, scaleStart, scaleEnd);
+            tablet.scale.set(scale, scale, scale);
+        };
+
+        window.addEventListener('mousemove', (e) => {
+            const x = (e.clientX / window.innerWidth) * 2 - 1; const y = -(e.clientY / window.innerHeight) * 2 + 1;
+            mouseX = x * 0.4; mouseY = y * 0.4;
+        });
+        window.addEventListener('mouseleave', () => { mouseX = 0; mouseY = 0; });
+
+        let ticking = false;
+        window.addEventListener('scroll', () => {
+            if (!ticking) { window.requestAnimationFrame(() => { updateAnimation(); ticking = false; }); ticking = true; }
+        });
+        updateAnimation();
+
+        const animate = () => {
+            requestAnimationFrame(animate);
+            const finalRotX = targetRotX - mouseY; const finalRotY = targetRotY + mouseX;
+            tablet.rotation.x += (finalRotX - tablet.rotation.x) * 0.08;
+            tablet.rotation.y += (finalRotY - tablet.rotation.y) * 0.08;
+            tablet.position.y += (targetPosY - tablet.position.y) * 0.08;
+            renderer.render(scene, camera);
+    };
+        animate();
+    });
+  </script>
+
+  <script src="https://cdn.jsdelivr.net/gh/studio-freight/lenis@1.0.19/bundled/lenis.min.js"></script>
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      const lenis = new Lenis({
+        duration: 1.2,
+        easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t))
+      });
+      function raf(time) {
+        lenis.raf(time);
+        requestAnimationFrame(raf);
+      }
+      requestAnimationFrame(raf);
+    });
+  </script>
+
+  <!-- ═══ PWA OFFLINE-FIRST STACK ═══ -->
+  <!-- 1. Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-analytics-compat.js"></script>
+  <!-- 2. Dexie.js (IndexedDB) -->
+  <script src="https://cdn.jsdelivr.net/npm/dexie@3.2.4/dist/dexie.min.js"></script>
+  <!-- 3. PWA Modules (load order matters) -->
+  <script src="/js/firebase-config.js"></script>
+  <script src="/js/crypto-store.js"></script>
+  <script src="/js/db.js"></script>
+  <script src="/js/image-handler.js"></script>
+  <script src="/js/sync-engine.js"></script>
+  <script src="/js/conflict-resolver.js"></script>
+  <script src="/js/battery-sync.js"></script>
+  <script src="/js/draft-manager.js"></script>
+  <script src="/js/sync-dashboard.js"></script>
+  <script src="/js/form-saver.js"></script>
+  <script src="/js/pwa-ui.js"></script>
+  <script src="/js/pwa-install-ux.js"></script>
+  <script src="/js/analytics-tracker.js"></script>
+  <script src="/js/pwa-core.js"></script>
+
+<button id="pwa-sync-fab" title="Sync Dashboard">☁ <span class="fab-badge" id="pwa-fab-badge">0</span></button><div id="pwa-sync-dashboard">
+      <div class="psd-header">
+        <div>
+          <div class="psd-header-title">☁ Sync Dashboard</div>
+          <div class="psd-header-sub" id="psd-connection-status">Checking connection…</div>
+        </div>
+        <button class="psd-close" id="psd-close">✕</button>
+      </div>
+      <div class="psd-stats">
+        <div class="psd-stat"><div class="psd-stat-val orange" id="psd-pending">-</div><div class="psd-stat-label">Pending</div></div>
+        <div class="psd-stat"><div class="psd-stat-val red" id="psd-failed">-</div><div class="psd-stat-label">Failed</div></div>
+        <div class="psd-stat"><div class="psd-stat-val green" id="psd-synced">-</div><div class="psd-stat-label">Synced</div></div>
+      </div>
+      <div class="psd-section">
+        <div class="psd-section-title">Last Sync</div>
+        <div class="psd-last-sync" id="psd-last-sync">Never</div>
+      </div>
+      <div class="psd-section">
+        <div class="psd-section-title">Queue</div>
+        <div class="psd-queue-list" id="psd-queue-list">
+          <div class="psd-empty">No pending items</div>
+        </div>
+      </div>
+      <div class="psd-actions">
+        <button class="psd-btn psd-btn-primary" id="psd-sync-now">⟳ Sync Now</button>
+        <button class="psd-btn psd-btn-danger" id="psd-clear-failed">Clear Failed</button>
+      </div>
+    </div><div id="pwa-status-bar"></div><div id="pwa-offline-banner">
+      <div class="pwa-offline-left">
+        <div class="pwa-offline-dot"></div>
+        <span>Offline Mode — Your data is safe locally</span>
+      </div>
+      <span id="pwa-offline-badge">0 pending</span>
+    </div><div id="pwa-install-banner">
+      <p>📱 Install Sarpanch AI for offline access</p>
+      <button id="pwa-install-btn">Install</button>
+      <button id="pwa-install-dismiss">✕</button>
+    </div><div id="pwa-install-overlay">
+      <div id="pwa-install-modal">
+        <div class="pwa-inst-logo">🌾</div>
+        <h2 class="pwa-inst-title">Install Sarpanch AI</h2>
+        <p class="pwa-inst-desc">Get the full offline experience designed for rural connectivity.</p>
+        
+        <div class="pwa-inst-benefits">
+          <div class="pwa-inst-benefit"><span class="pwa-inst-check">✓</span> Works without internet</div>
+          <div class="pwa-inst-benefit"><span class="pwa-inst-check">✓</span> Saves form data automatically</div>
+          <div class="pwa-inst-benefit"><span class="pwa-inst-check">✓</span> Faster loading &amp; less data usage</div>
+          <div class="pwa-inst-benefit"><span class="pwa-inst-check">✓</span> Access from your home screen</div>
+        </div>
+
+        <div class="pwa-inst-actions">
+          <button class="pwa-inst-btn-main" id="pwa-inst-install-btn">Install App Now</button>
+          <button class="pwa-inst-btn-skip" id="pwa-inst-close-btn">Maybe Later</button>
+        </div>
+      </div>
+    </div><button id="pwa-floating-install"><span class="icon">📱</span> Install App</button></body></html>

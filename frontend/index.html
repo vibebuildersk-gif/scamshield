@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PhishGuard | Advanced ML Cyber Scanner</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="glow-bg"></div>
+    
+    <div class="container">
+        <header>
+            <div class="logo">
+                <span class="icon">🛡️</span>
+                <h1>PhishGuard <span class="badge">PRO</span></h1>
+            </div>
+            <p>Advanced Browser Behavior & ML Analytics Engine</p>
+        </header>
+
+        <main>
+            <div class="search-box">
+                <input type="text" id="url-input" placeholder="https://suspicious-website.com" autocomplete="off">
+                <button id="scan-btn">ANALYZE TARGET</button>
+            </div>
+
+            <!-- Loading State -->
+            <div id="loading-state" class="hidden">
+                <div class="spinner"></div>
+                <h3>Extracting Dynamic Browser Behavior...</h3>
+                <p>Playwright is rendering the DOM and hunting for hidden elements.</p>
+            </div>
+
+            <!-- Results State -->
+            <div id="results-state" class="hidden">
+                <div class="verdict-card" id="verdict-card">
+                    <h2 id="verdict-text">LEGITIMATE</h2>
+                    <div class="confidence-wrapper">
+                        <span>Confidence Score:</span>
+                        <span id="confidence-score">99.9%</span>
+                    </div>
+                </div>
+
+                <div class="telemetry">
+                    <h3>🔍 Behavioral Telemetry</h3>
+                    <div class="grid" id="telemetry-grid">
+                        <!-- Populated by JS -->
+                    </div>
+                </div>
+
+                <div class="visual-snapshot">
+                    <h3>📸 Target Visual Snapshot</h3>
+                    <div class="screenshot-container">
+                        <img id="target-screenshot" src="" alt="Target Screenshot" class="hidden">
+                    </div>
+                </div>
+            </div>
+        </main>
+        
+        <footer>
+            <p>Powered by Random Forest ML & Playwright | Local Engine Port: 8000</p>
+        </footer>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-analytics.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyCuY2Dhl3Ikj77NZ2k7snj6ZeRQfr8_ybc",
+            authDomain: "scamshield-e71f3.firebaseapp.com",
+            projectId: "scamshield-e71f3",
+            storageBucket: "scamshield-e71f3.firebasestorage.app",
+            messagingSenderId: "575955761898",
+            appId: "1:575955761898:web:8576c235d469ed11a7f593",
+            measurementId: "G-XNB52C6516"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const analytics = getAnalytics(app);
+    </script>
+    <script src="script.js"></script>
+</body>
+</html>
