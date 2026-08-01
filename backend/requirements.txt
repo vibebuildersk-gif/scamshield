@@ -12,3 +12,5 @@ scikit-learn
 pandas
 joblib
 tldextract
+python-whois
+playwright
