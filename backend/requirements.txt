@@ -15,3 +15,5 @@ tldextract
 python-whois
 playwright
 cloudinary
+Pillow
+ImageHash
