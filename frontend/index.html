@@ -43,8 +43,24 @@
                 </div>
 
                 <div class="telemetry">
+                    <div id="site-dead-warning" class="hidden" style="margin-bottom: 1rem; padding: 1rem; background: rgba(255, 255, 0, 0.1); border: 1px solid #ffcc00; border-radius: 8px; font-size: 0.95rem; color: #ffcc00; text-align: center;">
+                        📴 <strong>Website Offline:</strong> This server is permanently closed or unreachable. Telemetry could not be extracted from target.
+                    </div>
+                    <div id="ocr-summary-box" class="hidden" style="margin-bottom: 1rem; padding: 1rem; background: rgba(0, 150, 255, 0.1); border: 1px solid #0096ff; border-radius: 8px; font-size: 0.95rem; color: #66b2ff; text-align: center;">
+                        🤖 <strong>Summary of the website:</strong> <span id="ocr-text"></span>
+                    </div>
                     <h3>🔍 Behavioral Telemetry</h3>
                     <div class="grid" id="telemetry-grid">
+                        <!-- Populated by JS -->
+                    </div>
+                    <div id="http-warning" class="hidden" style="margin-top: 1.5rem; padding: 1rem; background: rgba(255, 42, 42, 0.1); border: 1px solid var(--danger); border-radius: 8px; font-size: 0.9rem; color: #ff9999; text-align: center;">
+                        ⚠️ <strong>Encryption Alert:</strong> This site lacks SSL/HTTPS encryption. Do not enter sensitive information here.
+                    </div>
+                </div>
+
+                <div class="visual-snapshot">
+                    <h3>🌍 Cloud Intelligence (URLScan.io)</h3>
+                    <div class="grid" id="urlscan-grid">
                         <!-- Populated by JS -->
                     </div>
                 </div>
@@ -59,7 +75,6 @@
         </main>
         
         <footer>
-            <p>Powered by Random Forest ML & Playwright | Local Engine Port: 8000</p>
         </footer>
     </div>
 

@@ -56,10 +56,31 @@ def scan_url(req: ScanRequest):
         
     print(f"Scanning: {url}")
     
+    from utils.urlscan_api import submit_to_urlscan, poll_urlscan_result, _get_fallback_data
+    from utils.virustotal_api import check_virustotal
+    from utils.ocr_analyzer import generate_ocr_summary
+    import concurrent.futures
+    
+    # Submit to URLScan immediately
+    uid = submit_to_urlscan(url)
+    
+    # Run ML/Behavior Extraction and URLScan polling concurrently
+    with concurrent.futures.ThreadPoolExecutor() as executor:
+        behavior_future = executor.submit(analyze_behavior, url)
+        if uid:
+            urlscan_future = executor.submit(poll_urlscan_result, uid)
+            
+        behavior_results = behavior_future.result()
+        urlscan_data = urlscan_future.result() if uid else _get_fallback_data()
+
+    # Fallback to VirusTotal if URLScan failed
+    vt_data = None
+    if urlscan_data.get("asn_name") == "API Timeout" or not uid:
+        print("[Fallback] URLScan failed, querying VirusTotal...")
+        vt_data = check_virustotal(url)
+
     # 1. Extract all features exactly like we did in generate_dataset.py
     features = {}
-    
-    behavior_results = analyze_behavior(url)
     html_content = behavior_results.pop("_raw_html", None)
     final_url = behavior_results.pop("_final_url", url)
     
@@ -72,6 +93,12 @@ def scan_url(req: ScanRequest):
     for k, v in features.items():
         if isinstance(v, bool):
             features[k] = int(v)
+            
+    # OCR Generation
+    ocr_summary = None
+    if not features.get("is_site_dead"):
+        print("[OCR] Site is alive, generating visual description...")
+        ocr_summary = generate_ocr_summary()
             
     if model is None or feature_names is None:
         # Return just the extracted features if model isn't built yet
@@ -143,6 +170,28 @@ def scan_url(req: ScanRequest):
     prediction = 1 if phishing_prob >= 0.50 else 0
     probability = [1.0 - phishing_prob, phishing_prob]
         
+    # ML Override Logic (Cloud Intelligence is Ground Truth)
+    api_is_malicious = False
+    api_is_clean = False
+    
+    if vt_data:
+        if vt_data["is_malicious"]:
+            api_is_malicious = True
+        elif vt_data["overall_score"] != "API Timeout":
+            api_is_clean = True
+    else:
+        if urlscan_data["is_malicious"]:
+            api_is_malicious = True
+        elif urlscan_data["asn_name"] != "API Timeout":
+            api_is_clean = True
+            
+    if api_is_malicious:
+        prediction = 1
+        probability = [0.01, 0.99]
+    elif api_is_clean:
+        prediction = 0
+        probability = [0.99, 0.01]
+
     confidence = max(probability) * 100
     
     return {
@@ -150,7 +199,10 @@ def scan_url(req: ScanRequest):
         "confidence": round(confidence, 2),
         "phishing_probability": round(probability[1] * 100, 2),
         "legitimate_probability": round(probability[0] * 100, 2),
-        "raw_features": features
+        "raw_features": features,
+        "urlscan": urlscan_data,
+        "virustotal": vt_data,
+        "ocr_summary": ocr_summary
     }
 
 if __name__ == "__main__":

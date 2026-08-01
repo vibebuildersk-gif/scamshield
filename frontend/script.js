@@ -8,8 +8,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const confidenceScore = document.getElementById('confidence-score');
     const telemetryGrid = document.getElementById('telemetry-grid');
 
-    // The FastAPI Backend URL (Updated to Local WiFi IP for mobile testing)
-    const API_URL = "http://192.168.31.61:8000/api/scan";
+    // The FastAPI Backend URL (Updated for Ngrok Tunneling)
+    const API_URL = "https://proposable-joni-superornamentally.ngrok-free.dev/api/scan";
 
     scanBtn.addEventListener('click', async () => {
         const url = urlInput.value.trim();
@@ -27,6 +27,7 @@ document.addEventListener('DOMContentLoaded', () => {
         resultsState.classList.add('hidden');
         loadingState.classList.remove('hidden');
         verdictCard.className = "verdict-card"; // Reset classes
+        document.getElementById('http-warning').classList.add('hidden');
         telemetryGrid.innerHTML = '';
 
         try {
@@ -55,6 +56,25 @@ document.addEventListener('DOMContentLoaded', () => {
                 verdictCard.classList.add('danger');
             } else {
                 verdictCard.classList.add('safe');
+                // Check if it's missing SSL (IsHTTPS == 0) and unhide warning
+                if (data.raw_features && (data.raw_features.IsHTTPS === 0 || data.raw_features.IsHTTPS === false)) {
+                    document.getElementById('http-warning').classList.remove('hidden');
+                }
+            }
+
+            // Handle OCR and Dead Site
+            const deadWarning = document.getElementById('site-dead-warning');
+            const ocrBox = document.getElementById('ocr-summary-box');
+            const ocrText = document.getElementById('ocr-text');
+            
+            if (deadWarning) deadWarning.classList.add('hidden');
+            if (ocrBox) ocrBox.classList.add('hidden');
+            
+            if (data.raw_features && data.raw_features.is_site_dead) {
+                if (deadWarning) deadWarning.classList.remove('hidden');
+            } else if (data.ocr_summary) {
+                if (ocrText) ocrText.innerText = data.ocr_summary;
+                if (ocrBox) ocrBox.classList.remove('hidden');
             }
 
             // Populate Behavioral Telemetry Grid
@@ -102,9 +122,66 @@ document.addEventListener('DOMContentLoaded', () => {
                 telemetryGrid.appendChild(metricDiv);
             });
 
+            // Populate Cloud Intelligence Grid
+            const urlscanGrid = document.getElementById('urlscan-grid');
+            const cloudTitle = urlscanGrid.previousElementSibling; // The <h3> above it
+            urlscanGrid.innerHTML = '';
+            
+            cloudTitle.classList.remove('hidden');
+            urlscanGrid.classList.remove('hidden');
+            
+            if (data.virustotal) {
+                cloudTitle.innerText = "🌍 Global Threat Intelligence";
+                const scanFeatures = [
+                    { label: 'Security Vendors Flagged', value: data.virustotal.overall_score },
+                    { label: 'Global Consensus Verdict', value: data.virustotal.is_malicious ? "Malicious" : "Clean" }
+                ];
+
+                    scanFeatures.forEach(feature => {
+                        let val = feature.value;
+                        const metricDiv = document.createElement('div');
+                        metricDiv.className = 'metric';
+                        
+                        let valClass = "val";
+                        if (val === "Malicious" || val === "True" || (typeof val === 'string' && val !== "0" && val.includes("/"))) valClass += " true"; // Red
+                        if (val === "Clean" || val === "False" || (typeof val === 'string' && val.startsWith("0/"))) valClass += " false"; // Green
+
+                        metricDiv.innerHTML = `
+                            <span class="label">${feature.label}</span>
+                            <span class="${valClass}">${val}</span>
+                        `;
+                        urlscanGrid.appendChild(metricDiv);
+                    });
+                } else if (data.urlscan) {
+                    cloudTitle.innerText = "🌍 Global Threat Intelligence";
+                    const scanFeatures = [
+                        { label: 'Hosting Provider (ASN)', value: data.urlscan.asn_name },
+                        { label: 'Server Location', value: data.urlscan.country },
+                        { label: 'Global Consensus Verdict', value: data.urlscan.is_malicious ? "Malicious" : "Clean" },
+                        { label: 'Impersonated Brand', value: data.urlscan.impersonated_brand },
+                        { label: 'Security Headers Missing', value: data.urlscan.security_headers_missing ? "True" : "False" }
+                    ];
+
+                    scanFeatures.forEach(feature => {
+                        let val = feature.value;
+                        const metricDiv = document.createElement('div');
+                        metricDiv.className = 'metric';
+                        
+                        let valClass = "val";
+                        if (val === "Malicious" || val === "True") valClass += " true"; // CSS .true is Red (Danger)
+                        if (val === "Clean" || val === "False") valClass += " false"; // CSS .false is Green (Safe)
+
+                        metricDiv.innerHTML = `
+                            <span class="label">${feature.label}</span>
+                            <span class="${valClass}">${val}</span>
+                        `;
+                        urlscanGrid.appendChild(metricDiv);
+                    });
+                }
+
             // Display Visual Snapshot
             const targetScreenshot = document.getElementById('target-screenshot');
-            targetScreenshot.src = `http://192.168.31.61:8000/static/scrapes/current_target.png?t=${new Date().getTime()}`;
+            targetScreenshot.src = `https://proposable-joni-superornamentally.ngrok-free.dev/static/scrapes/current_target.png?t=${new Date().getTime()}`;
             targetScreenshot.classList.remove('hidden');
 
         } catch (error) {

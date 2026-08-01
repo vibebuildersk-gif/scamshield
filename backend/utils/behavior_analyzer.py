@@ -16,6 +16,8 @@ def analyze_behavior(url):
             pass
 
     results = {
+        "is_site_dead": False,
+        "dead_reason": None,
         "redirect_chain_length": 0,
         "auto_redirects": False,
         "has_popups": False,
@@ -65,6 +67,8 @@ def analyze_behavior(url):
                 page.wait_for_timeout(5000) # Give Cloudflare/React 5 seconds to load
             except Exception as goto_err:
                 print(f"[Behavior Analyzer] goto warning: {goto_err}")
+                results["is_site_dead"] = True
+                results["dead_reason"] = "DNS Error or Unreachable"
             
             # Phase 2.5: Visual Screenshot Engine
             import os

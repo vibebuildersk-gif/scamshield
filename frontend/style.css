@@ -302,3 +302,14 @@ footer {
     display: block;
     margin: 0 auto;
 }
+
+/* Mobile Responsiveness */
+@media (max-width: 600px) {
+    .search-box {
+        flex-direction: column;
+    }
+    .search-box input,
+    .search-box button {
+        width: 100%;
+    }
+}
