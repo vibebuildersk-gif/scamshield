@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, File, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 import joblib
@@ -47,6 +47,21 @@ def load_model():
 
 class ScanRequest(BaseModel):
     url: str
+
+@app.post("/api/scan-qr")
+async def scan_qr_code(file: UploadFile = File(...)):
+    contents = await file.read()
+    from utils.qr_analyzer import decode_qr_image, analyze_qr_string
+    
+    # 1. Decode Image
+    payload = decode_qr_image(contents)
+    if not payload:
+        return {"error": "Could not detect or decode a QR code in the provided image.", "risk_level": "Unknown"}
+        
+    # 2. Analyze Payload
+    analysis_results = analyze_qr_string(payload)
+    return analysis_results
+
 
 @app.post("/api/scan")
 def scan_url(req: ScanRequest):
@@ -207,5 +222,7 @@ def scan_url(req: ScanRequest):
 
 if __name__ == "__main__":
     import uvicorn
-    # Run server locally
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    import os
+    # Run server locally or via cloud provider port
+    port = int(os.environ.get("PORT", 8000))
+    uvicorn.run(app, host="0.0.0.0", port=port)
