@@ -5,6 +5,9 @@ import joblib
 import pandas as pd
 import os
 
+# Fix Playwright on Render: force it to look in the local project directory for Chromium
+os.environ["PLAYWRIGHT_BROWSERS_PATH"] = "0"
+
 from utils.url_features import extract_url_features
 from utils.html_features import extract_html_features
 from utils.whois_features import extract_whois_features
