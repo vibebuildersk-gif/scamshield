@@ -111,7 +111,8 @@ def _parse_urlscan_data(data):
         "is_malicious": is_malicious,
         "impersonated_brand": impersonated_brand,
         "security_headers_missing": security_headers_missing,
-        "report_url": data.get("task", {}).get("reportURL", "#")
+        "report_url": data.get("task", {}).get("reportURL", "#"),
+        "screenshot_url": data.get("task", {}).get("screenshotURL", f"https://urlscan.io/screenshots/{data.get('task', {}).get('uuid', '')}.png") if data.get("task", {}).get("uuid") else ""
     }
 
 def _get_fallback_data():
@@ -122,7 +123,8 @@ def _get_fallback_data():
         "is_malicious": False,
         "impersonated_brand": "Unknown",
         "security_headers_missing": False,
-        "report_url": "#"
+        "report_url": "#",
+        "screenshot_url": ""
     }
 
 if __name__ == "__main__":

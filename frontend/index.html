@@ -10,8 +10,20 @@
 <body>
     <div class="glow-bg"></div>
     
-    <div class="container">
-        <header>
+    <div class="app-layout">
+        <aside class="sidebar">
+            <div class="sidebar-brand">
+                <span class="icon">🛡️</span>
+                <h2>PhishGuard</h2>
+            </div>
+            <nav class="nav-menu">
+                <button id="nav-link-detection" class="nav-btn active">🔗 Link Detection</button>
+                <button id="nav-qr-checker" class="nav-btn">📱 QR Checker</button>
+            </nav>
+        </aside>
+        
+        <div class="container">
+            <header>
             <div class="logo">
                 <span class="icon">🛡️</span>
                 <h1>PhishGuard <span class="badge">PRO</span></h1>
@@ -20,7 +32,9 @@
         </header>
 
         <main>
-            <div class="search-box">
+            <!-- Link Detection View -->
+            <div id="link-detection-view" class="view-section active">
+                <div class="search-box">
                 <input type="text" id="url-input" placeholder="https://suspicious-website.com" autocomplete="off">
                 <button id="scan-btn">ANALYZE TARGET</button>
             </div>
@@ -72,11 +86,60 @@
                     </div>
                 </div>
             </div>
+            </div> <!-- End Link Detection View -->
+
+            <!-- QR Checker View -->
+            <div id="qr-checker-view" class="view-section hidden">
+                <div class="header-section">
+                    <h2>QR Code Analyzer</h2>
+                    <p>Upload a QR code to scan for malicious payloads, homograph attacks, and intent hijacking.</p>
+                </div>
+                
+                <div class="qr-upload-zone" id="qr-drop-zone">
+                    <input type="file" id="qr-file-input" accept="image/*" style="display: none;">
+                    <button id="qr-upload-btn" class="upload-btn">📁 Upload QR Code Image</button>
+                    <p class="sub-text">or drag and drop here</p>
+                </div>
+
+                <div id="qr-preview-zone" class="hidden visual-snapshot" style="text-align: center; margin-top: 1.5rem;">
+                    <div class="screenshot-container" style="display: inline-block; padding: 1rem; border: 1px dashed rgba(255,255,255,0.2); border-radius: 8px; background: rgba(0,0,0,0.3);">
+                        <img id="qr-preview-image" src="" alt="QR Preview" style="max-height: 250px; border-radius: 8px;">
+                    </div>
+                    <div style="margin-top: 1.5rem;">
+                        <button id="qr-analyze-btn" class="upload-btn" style="background-color: var(--accent); color: var(--bg-dark); font-weight: bold;">🔍 Analyze QR Code</button>
+                        <button id="qr-reset-btn" class="upload-btn" style="background-color: transparent; border: 1px solid var(--text-muted); margin-left: 10px;">Upload Different Image</button>
+                    </div>
+                </div>
+                
+                <div id="qr-loading-state" class="hidden">
+                    <div class="spinner"></div>
+                    <h3>Analyzing QR Payload...</h3>
+                </div>
+
+                <div id="qr-results-state" class="hidden">
+                    <div class="verdict-card" id="qr-verdict-card" style="padding: 2rem;">
+                        <h2 id="qr-verdict-text" style="font-size: 2rem; margin-bottom: 1rem;">SAFE</h2>
+                        <div id="qr-payload-text" style="text-align: left;"></div>
+                        <div id="qr-warnings-container" style="margin-top: 1.5rem; text-align: left; display: grid; gap: 0.5rem;"></div>
+                    </div>
+                    
+                    <div class="static-warnings" style="margin-top: 2rem; text-align: left; opacity: 0.8;">
+                        <h4 style="margin-bottom: 1rem; color: var(--text-muted);">Best Practices for Merchants & Customers</h4>
+                        <div class="warning-box info-box" style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1);">
+                            <span class="icon">ℹ️</span> <strong>Physical Tampering:</strong> Always check if a QR code is a sticker pasted over an original board.
+                        </div>
+                        <div class="warning-box info-box" style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); margin-top: 0.5rem;">
+                            <span class="icon">🔊</span> <strong>Fake Screens:</strong> Merchants should rely exclusively on official soundboxes or bank notifications, not customer screens.
+                        </div>
+                    </div>
+                </div>
+            </div> <!-- End QR Checker View -->
         </main>
         
         <footer>
         </footer>
-    </div>
+        </div> <!-- End container -->
+    </div> <!-- End app-layout -->
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";

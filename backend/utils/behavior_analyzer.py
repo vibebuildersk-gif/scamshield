@@ -7,7 +7,10 @@ def analyze_behavior(url):
     Actively monitors browser behavior to detect advanced phishing techniques
     that rely on dynamic redirects, popups, and hidden DOM elements.
     """
-    import os
+    # Lightweight mode for Render free tier to prevent OOM
+    if os.environ.get("RENDER") == "true":
+        return _analyze_behavior_lightweight(url)
+
     import cloudinary
     import cloudinary.uploader
     
@@ -208,6 +211,109 @@ def analyze_behavior(url):
         print(f"[Behavior Analyzer Error] {e}")
         pass
             
+    return results
+
+def _analyze_behavior_lightweight(url):
+    import requests
+    from bs4 import BeautifulSoup
+    
+    results = {
+        "is_site_dead": False,
+        "dead_reason": None,
+        "redirect_chain_length": 0,
+        "auto_redirects": False,
+        "has_popups": False,
+        "has_downloads": False,
+        
+        "login_forms": False,
+        "password_fields": False,
+        "otp_fields": False,
+        "credit_card_fields": False,
+        "bank_fields": False,
+        
+        "hidden_forms": False,
+        "hidden_buttons": False,
+        "hidden_links": False,
+        "invisible_iframes": False,
+        
+        "_screenshot_path": "",
+        "cloudinary_url": "",
+        "_raw_html": "",
+        "_final_url": url
+    }
+    
+    try:
+        response = requests.get(url, timeout=10, allow_redirects=True)
+        results["_final_url"] = response.url
+        results["redirect_chain_length"] = len(response.history)
+        
+        if response.url != url:
+            clean_final = response.url.rstrip("/").replace("https://", "http://").replace("www.", "")
+            clean_initial = url.rstrip("/").replace("https://", "http://").replace("www.", "")
+            if clean_final != clean_initial:
+                results["auto_redirects"] = True
+                
+        html_content = response.text
+        results["_raw_html"] = html_content
+        
+        soup = BeautifulSoup(html_content, 'html.parser')
+        
+        def is_hidden(el):
+            style = el.get('style', '').lower()
+            return 'display: none' in style or 'display:none' in style or \
+                   'visibility: hidden' in style or 'visibility:hidden' in style
+                   
+        for f in soup.find_all('form'):
+            if is_hidden(f):
+                results["hidden_forms"] = True
+            
+            html = str(f).lower()
+            if 'login' in html or 'sign in' in html or 'auth' in html:
+                results["login_forms"] = True
+                
+        for b in soup.find_all('button'):
+            if is_hidden(b):
+                results["hidden_buttons"] = True
+                
+        for l in soup.find_all('a'):
+            if is_hidden(l):
+                results["hidden_links"] = True
+                
+        for iframe in soup.find_all('iframe'):
+            if is_hidden(iframe):
+                results["invisible_iframes"] = True
+            width = iframe.get('width', '')
+            height = iframe.get('height', '')
+            if width in ['1', '0'] or height in ['1', '0']:
+                results["invisible_iframes"] = True
+                
+        otp_keywords = ['otp', 'verification', '2fa', 'code', 'token']
+        cc_keywords = ['card', 'cc', 'cvv', 'cvc', 'expire', 'expiry', 'cardnumber']
+        bank_keywords = ['account', 'routing', 'bank', 'ssn', 'social security']
+        
+        for inp in soup.find_all('input'):
+            inp_type = inp.get('type', '').lower()
+            inp_name = inp.get('name', '').lower()
+            inp_id = inp.get('id', '').lower()
+            inp_ph = inp.get('placeholder', '').lower()
+            
+            combined = f"{inp_name} {inp_id} {inp_ph}"
+            
+            if inp_type == 'password':
+                results["password_fields"] = True
+                
+            if any(k in combined for k in otp_keywords):
+                results["otp_fields"] = True
+            if any(k in combined for k in cc_keywords):
+                results["credit_card_fields"] = True
+            if any(k in combined for k in bank_keywords):
+                results["bank_fields"] = True
+                
+    except Exception as e:
+        print(f"[Behavior Analyzer Lightweight Error] {e}")
+        results["is_site_dead"] = True
+        results["dead_reason"] = "DNS Error or Unreachable"
+        
     return results
 
 if __name__ == "__main__":
